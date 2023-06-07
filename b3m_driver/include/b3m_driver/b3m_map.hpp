@@ -1,0 +1,186 @@
+/*********************************************************************
+ * Copyright (c) 2023
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ ********************************************************************/
+
+#ifndef B3M_MAP_HPP_
+#define B3M_MAP_HPP_
+
+// system address
+#define SYSTEM_ID 0x00
+#define SYSTEM_BAUDRATE 0x01
+#define SYSTEM_POSITION_MIN 0x05
+#define SYSTEM_POSITION_MAX 0x07
+#define SYSTEM_POSITION_CENTER 0x09
+#define SYSTEM_MCU_TEMP_LIMIT 0x0B
+#define SYSTEM_MCU_TEMP_LIMIT_PR 0x0D
+#define SYSTEM_MOTOR_TEMP_LIMIT 0x0E
+#define SYSTEM_MOTOR_TEMP_LIMIT_PR 0x10
+#define SYSTEM_CURRENT_LIMIT 0x11
+#define SYSTEM_CURRENT_LIMIT_PR 0x13
+#define SYSTEM_LOCKDETECT_TIME 0x14
+#define SYSTEM_LOCKDETECT_OUTRATE 0x15
+#define SYSTEM_LOCKDETECT_TIME_PR 0x16
+#define SYSTEM_INPUT_VOLTAGE_MIN 0x17
+#define SYSTEM_INPUT_VOLTAGE_MAX 0x19
+#define SYSTEM_TORQUE_LIMIT 0x1B
+#define SYSTEM_DEADBAND_WIDTH 0x1C
+#define SYSTEM_MOTOR_CW_RATIO 0x22
+#define SYSTEM_MOTOR_CCW_RATIO 0x23
+
+// servo parameter address
+#define SERVO_SERVO_OPTION 0x27
+#define SERVO_SERVO_MODE 0x28
+#define SERVO_TORQUE_ON 0x28
+#define SERVO_RUN_MODE 0x29
+#define SERVO_DESIRED_POSITION 0x2A
+#define SERVO_CURRENT_POSITION 0x2C
+#define SERVO_PREVIOUS_POSITION 0x2E
+#define SERVO_DESIRED_VELOCITY 0x30
+#define SERVO_CURRENT_VELOCITY 0x32
+#define SERVO_PREVIOUS_VELOCITY 0x34
+#define SERVO_DESIRED_TIME 0x36
+#define SERVO_RUNNING_TIME 0x38
+#define SERVO_WORKING_TIME 0x3A
+#define SERVO_DESIRED_TORQUE 0x3C
+#define SERVO_SYSTEM_CLOCK 0x3E
+#define SERVO_SAMPLING_TIME 0x42
+#define SERVO_MCU_TEMP 0x44
+#define SERVO_MOTOR_TEMP 0x46
+#define SERVO_CURRENT 0x48
+#define SERVO_INPUT_VOLTAGE 0x4A
+#define SERVO_PWM_DUTY 0x4C
+#define SERVO_PWM_FREQUENCY 0x4E
+#define SERVO_ENCODER_VALUE 0x50
+#define SERVO_ENCODER_COUNT 0x52
+#define SERVO_HALLIC_STATE 0x56
+
+// control parameter address
+#define CONTROL_CONTROL_LOW 0x5C
+#define CONTROL_GAIN_PRESETNO 0x5C
+#define CONTROL_TYPE 0x5D
+#define CONTROL_KP0 0x5E
+#define CONTROL_KD0 0x62
+#define CONTROL_KI0 0x66
+#define CONTROL_STATIC_FRICTION0 0x6A
+#define CONTROL_DYNAMIC_FRICTION0 0x6C
+#define CONTROL_KP1 0x6E
+#define CONTROL_KD1 0x72
+#define CONTROL_KI1 0x76
+#define CONTROL_STATIC_FRICTION1 0x7A
+#define CONTROL_DYNAMIC_FRICTION1 0x7C
+#define CONTROL_KP2 0x7E
+#define CONTROL_KD2 0x82
+#define CONTROL_KI2 0x86
+#define CONTROL_STATIC_FRICTION2 0x8A
+#define CONTROL_DYNAMIC_FRICTION2 0x8C
+
+// status address
+#define STATUS_BASE_ADDR 0x9D
+#define STATUS_SYSTEM 0x9E
+#define STATUS_MOTOR 0x9F
+#define STATUS_UART 0xA0
+#define STATUS_COMMAND 0xA1
+
+// version information address
+#define CONFIG_MODEL_NUMBER 0xA2
+#define CONFIG_MODEL_NUMBER_VOLTAGE_CLASS 0xA2
+#define CONFIG_MODEL_NUMBER_VERSION 0xA3
+#define CONFIG_MODEL_NUMBER_TORQUE 0xA4
+#define CONFIG_MODEL_NUMBER_CASE 0xA5
+#define CONFIG_MODEL_TYPE 0xA6
+#define CONFIG_MODEL_TYPE_MOTOR 0xA8
+#define CONFIG_MODEL_TYPE_DEVICE 0xA9
+#define CONFIG_FW_VERSION 0xAA
+#define CONFIG_FW_BUILD 0xAA
+#define CONFIG_FW_REVISION 0xAB
+#define CONFIG_FW_MINOR 0xAC
+#define CONFIG_FW_MAJOR 0xAD
+
+// system initial value address
+#define CONFIG_ENC_OFFSET_CENTER 0xAE
+#define CONFIG_ENC_OFFSET 0xB0
+
+// mode/options
+#define OPTIONS_RUN_NORMAL 0x00
+#define OPTIONS_RUN_FREE 0x02
+#define OPTIONS_RUN_HOLD 0x03
+#define OPTIONS_CONTROL_POSITION 0x00
+#define OPTIONS_CONTROL_VELOCITY 0x04
+#define OPTIONS_CONTROL_TORQUE 0x08
+#define OPTIONS_CONTROL_FFORWARD 0x0C
+#define OPTIONS_SERVO_NORMAL 0x00
+#define OPTIONS_SERVO_CLONE 0x40
+#define OPTIONS_SERVO_REVERSE 0x80
+
+// error status
+#define RETURN_ERROR_STATUS 0x00
+#define SYSTEM_ERROR 0x01
+#define MOTOR_ERROR 0x02
+#define UART_ERROR 0x03
+#define COMMAND_ERROR 0x04
+
+// system errors
+#define RETURN_SYSTEM_STATUS 0x01
+#define SYSTEM_ERROR_WATCHDOG 0x01
+#define SYSTEM_ERROR_FLASH_ADDRESS 0x02
+#define SYSTEM_ERROR_MEMORY_ALLOCATION 0x04
+#define SYSTEM_ERROR_INPUT_VOLTAGE 0x08
+#define SYSTEM_ERROR_MOTOR_TEMP 0x10
+#define SYSTEM_ERROR_AD_CONVERSION 0x20
+#define SYSTEM_ERROR_I2C 0x40
+#define SYSTEM_ERROR_SPI 0x80
+
+// motor errors
+#define RETURN_MOTOR_STATUS 0x02
+#define MOTOR_ERROR_EXCEED_MOTOR_TEMP 0x01
+#define MOTOR_ERROR_LOCK_DETECT 0x02
+#define MOTOR_ERROR_EXCEED_CURRENT_LIMIT 0x04
+#define MOTOR_ERROR_HALL_IC 0x08
+
+// uart errors
+#define RETURN_UART_STATUS 0x03
+#define UART_ERROR_FRAMING 0x01
+#define UART_ERROR_PARITY 0x02
+#define UART_ERROR_BREAK 0x04
+#define UART_ERROR_OVERRUN 0x08
+
+// command error
+#define RETURN_COMMAND_STATUS 0x04
+#define COMMAND_ERROR_CHECKSUM 0x01
+#define COMMAND_ERROR_LENGTH 0x02
+#define COMMAND_ERROR_SIZE 0x04
+#define COMMAND_ERROR_ADDRESS 0x08
+#define COMMAND_ERROR_WRONG_COMMAND 0x10
+
+// trajectory type
+#define TRAJECTORY_NORMAL 0x00
+#define TRAJECTORY_EVEN 0x01
+#define TRAJECTORY_THIRD_POLY 0x03
+#define TRAJECTORY_FOURTH_POLY 0x04
+#define TRAJECTORY_FIFTH_POLY 0x05
+
+// command type
+#define COMMAND_TYPE_LOAD 0x01
+#define COMMAND_TYPE_SAVE 0x02
+#define COMMAND_TYPE_READ 0x03
+#define COMMAND_TYPE_WRITE 0x04
+#define COMMAND_TYPE_POSITION 0x05
+#define COMMAND_TYPE_RESET 0x06
+
+// extra
+#define BROADCAST_ID 0xFF
+
+#endif  // B3M_MAP_HPP_
