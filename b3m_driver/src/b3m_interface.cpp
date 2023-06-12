@@ -19,6 +19,8 @@
 #include "b3m_driver/b3m_map.hpp"
 #include "b3m_driver/b3m_interface.hpp"
 
+namespace b3m_driver
+{
 B3MInterface::B3MInterface()
 {
 }
@@ -263,7 +265,225 @@ bool B3MInterface::setMotorCCWPWMLimit(uint8_t servo_id, uint8_t pwm)
   return true;
 }
 
-// TODO: system related read functions
+uint8_t B3MInterface::getServoID(uint8_t servo_id)
+{
+  uint8_t data;
+  if (!b3m_driver_.read(COMMAND_TYPE_READ, RETURN_ERROR_STATUS, servo_id, SYSTEM_ID, 1, data))
+  {
+    std::cout << "Servo: " << static_cast<unsigned>(servo_id) << " failed to get servo ID" << std::endl;
+    return 0;
+  }
+  return data;
+}
+
+unsigned long B3MInterface::getBaudrate(uint8_t servo_id)
+{
+  unsigned long data;
+  if (!b3m_driver_.read(COMMAND_TYPE_READ, RETURN_ERROR_STATUS, servo_id, SYSTEM_BAUDRATE, 4, data))
+  {
+    std::cout << "Servo: " << static_cast<unsigned>(servo_id) << " failed to get baudrate" << std::endl;
+    return 0;
+  }
+  return data;
+}
+
+short B3MInterface::getPositionMin(uint8_t servo_id)
+{
+  short data;
+  if (!b3m_driver_.read(COMMAND_TYPE_READ, RETURN_ERROR_STATUS, servo_id, SYSTEM_POSITION_MIN, 2, data))
+  {
+    std::cout << "Servo: " << static_cast<unsigned>(servo_id) << " failed to get position min" << std::endl;
+    return 0;
+  }
+  return data;
+}
+
+short B3MInterface::getPositionMax(uint8_t servo_id)
+{
+  short data;
+  if (!b3m_driver_.read(COMMAND_TYPE_READ, RETURN_ERROR_STATUS, servo_id, SYSTEM_POSITION_MAX, 2, data))
+  {
+    std::cout << "Servo: " << static_cast<unsigned>(servo_id) << " failed to get position max" << std::endl;
+    return 0;
+  }
+  return data;
+}
+
+short B3MInterface::getPositionCenterOffset(uint8_t servo_id)
+{
+  short data;
+  if (!b3m_driver_.read(COMMAND_TYPE_READ, RETURN_ERROR_STATUS, servo_id, SYSTEM_POSITION_CENTER, 2, data))
+  {
+    std::cout << "Servo: " << static_cast<unsigned>(servo_id) << " failed to get position center offset" << std::endl;
+    return 0;
+  }
+  return data;
+}
+
+short B3MInterface::getMCUTempLimit(uint8_t servo_id)
+{
+  short data;
+  if (!b3m_driver_.read(COMMAND_TYPE_READ, RETURN_ERROR_STATUS, servo_id, SYSTEM_MCU_TEMP_LIMIT, 2, data))
+  {
+    std::cout << "Servo: " << static_cast<unsigned>(servo_id) << " failed to get MCU temp" << std::endl;
+    return 0;
+  }
+  return data;
+}
+
+uint8_t B3MInterface::getMCUTempPWMLimit(uint8_t servo_id)
+{
+  uint8_t data;
+  if (!b3m_driver_.read(COMMAND_TYPE_READ, RETURN_ERROR_STATUS, servo_id, SYSTEM_MCU_TEMP_LIMIT_PR, 1, data))
+  {
+    std::cout << "Servo: " << static_cast<unsigned>(servo_id) << " failed to get MCU temp PWM limit" << std::endl;
+    return 0;
+  }
+  return data;
+}
+
+short B3MInterface::getMotorTempLimit(uint8_t servo_id)
+{
+  short data;
+  if (!b3m_driver_.read(COMMAND_TYPE_READ, RETURN_ERROR_STATUS, servo_id, SYSTEM_MOTOR_TEMP_LIMIT, 2, data))
+  {
+    std::cout << "Servo: " << static_cast<unsigned>(servo_id) << " failed to get motor temp limit" << std::endl;
+    return 0;
+  }
+  return data;
+}
+
+uint8_t B3MInterface::getMotorTempPWMLimit(uint8_t servo_id)
+{
+  uint8_t data;
+  if (!b3m_driver_.read(COMMAND_TYPE_READ, RETURN_ERROR_STATUS, servo_id, SYSTEM_MOTOR_TEMP_LIMIT_PR, 1, data))
+  {
+    std::cout << "Servo: " << static_cast<unsigned>(servo_id) << " failed to get motor temp PWM limit" << std::endl;
+    return 0;
+  }
+  return data;
+}
+
+unsigned short B3MInterface::getCurrentLimit(uint8_t servo_id)
+{
+  unsigned short data;
+  if (!b3m_driver_.read(COMMAND_TYPE_READ, RETURN_ERROR_STATUS, servo_id, SYSTEM_CURRENT_LIMIT, 2, data))
+  {
+    std::cout << "Servo: " << static_cast<unsigned>(servo_id) << " failed to get current limit" << std::endl;
+    return 0;
+  }
+  return data;
+}
+
+uint8_t B3MInterface::getCurrentPWMLimit(uint8_t servo_id)
+{
+  uint8_t data;
+  if (!b3m_driver_.read(COMMAND_TYPE_READ, RETURN_ERROR_STATUS, servo_id, SYSTEM_CURRENT_LIMIT_PR, 1, data))
+  {
+    std::cout << "Servo: " << static_cast<unsigned>(servo_id) << " failed to get current PWM limit" << std::endl;
+    return 0;
+  }
+  return data;
+}
+
+uint8_t B3MInterface::getLockDetectTime(uint8_t servo_id)
+{
+  uint8_t data;
+  if (!b3m_driver_.read(COMMAND_TYPE_READ, RETURN_ERROR_STATUS, servo_id, SYSTEM_LOCKDETECT_TIME, 1, data))
+  {
+    std::cout << "Servo: " << static_cast<unsigned>(servo_id) << " failed to get lock detected" << std::endl;
+    return 0;
+  }
+  return data;
+}
+
+uint8_t B3MInterface::getLockDetectOutRate(uint8_t servo_id)
+{
+  uint8_t data;
+  if (!b3m_driver_.read(COMMAND_TYPE_READ, RETURN_ERROR_STATUS, servo_id, SYSTEM_LOCKDETECT_OUTRATE, 1, data))
+  {
+    std::cout << "Servo: " << static_cast<unsigned>(servo_id) << " failed to get lock detect out rate" << std::endl;
+    return 0;
+  }
+  return data;
+}
+
+uint8_t B3MInterface::getLockDetectPowerRatio(uint8_t servo_id)
+{
+  uint8_t data;
+  if (!b3m_driver_.read(COMMAND_TYPE_READ, RETURN_ERROR_STATUS, servo_id, SYSTEM_LOCKDETECT_TIME_PR, 1, data))
+  {
+    std::cout << "Servo: " << static_cast<unsigned>(servo_id) << " failed to get lock detect power ratio" << std::endl;
+    return 0;
+  }
+  return data;
+}
+
+unsigned short B3MInterface::getInputVoltageMin(uint8_t servo_id)
+{
+  unsigned short data;
+  if (!b3m_driver_.read(COMMAND_TYPE_READ, RETURN_ERROR_STATUS, servo_id, SYSTEM_INPUT_VOLTAGE_MIN, 2, data))
+  {
+    std::cout << "Servo: " << static_cast<unsigned>(servo_id) << " failed to get input voltage min" << std::endl;
+    return 0;
+  }
+  return data;
+}
+
+unsigned short B3MInterface::getInputVoltageMax(uint8_t servo_id)
+{
+  unsigned short data;
+  if (!b3m_driver_.read(COMMAND_TYPE_READ, RETURN_ERROR_STATUS, servo_id, SYSTEM_INPUT_VOLTAGE_MAX, 2, data))
+  {
+    std::cout << "Servo: " << static_cast<unsigned>(servo_id) << " failed to get input voltage max" << std::endl;
+    return 0;
+  }
+  return data;
+}
+
+uint8_t B3MInterface::getPWMLimit(uint8_t servo_id)
+{
+  uint8_t data;
+  if (!b3m_driver_.read(COMMAND_TYPE_READ, RETURN_ERROR_STATUS, servo_id, SYSTEM_TORQUE_LIMIT, 1, data))
+  {
+    std::cout << "Servo: " << static_cast<unsigned>(servo_id) << " failed to get PWM limit" << std::endl;
+    return 0;
+  }
+  return data;
+}
+
+unsigned short B3MInterface::getDeadbandWidth(uint8_t servo_id)
+{
+  unsigned short data;
+  if (!b3m_driver_.read(COMMAND_TYPE_READ, RETURN_ERROR_STATUS, servo_id, SYSTEM_DEADBAND_WIDTH, 2, data))
+  {
+    std::cout << "Servo: " << static_cast<unsigned>(servo_id) << " failed to get deadband width" << std::endl;
+    return 0;
+  }
+  return data;
+}
+
+uint8_t B3MInterface::getMotorCWPWMLimit(uint8_t servo_id)
+{
+  uint8_t data;
+  if (!b3m_driver_.read(COMMAND_TYPE_READ, RETURN_ERROR_STATUS, servo_id, SYSTEM_MOTOR_CW_RATIO, 1, data))
+  {
+    std::cout << "Servo: " << static_cast<unsigned>(servo_id) << " failed to get motor CW PWM limit" << std::endl;
+    return 0;
+  }
+  return data;
+}
+
+uint8_t B3MInterface::getMotorCCWPWMLimit(uint8_t servo_id)
+{
+  uint8_t data;
+  if (!b3m_driver_.read(COMMAND_TYPE_READ, RETURN_ERROR_STATUS, servo_id, SYSTEM_MOTOR_CCW_RATIO, 1, data))
+  {
+    std::cout << "Servo: " << static_cast<unsigned>(servo_id) << " failed to get motor CCW PWM limit" << std::endl;
+    return 0;
+  }
+  return data;
+}
 
 // servo parameter related functions
 bool B3MInterface::setServoOption(uint8_t servo_id, uint8_t option)
@@ -356,7 +576,269 @@ bool B3MInterface::setEncoderCount(uint8_t servo_id, long value)
   return true;
 }
 
-// TODO: servo parameter related read functions
+uint8_t B3MInterface::getServoOption(uint8_t servo_id)
+{
+  uint8_t data;
+  if (!b3m_driver_.read(COMMAND_TYPE_READ, RETURN_ERROR_STATUS, servo_id, SERVO_SERVO_OPTION, 1, data))
+  {
+    std::cout << "Servo: " << static_cast<unsigned>(servo_id) << " failed to get servo option" << std::endl;
+    return 0;
+  }
+  return data;
+}
+
+unsigned short B3MInterface::getServoMode(uint8_t servo_id)
+{
+  unsigned short data;
+  if (!b3m_driver_.read(COMMAND_TYPE_READ, RETURN_ERROR_STATUS, servo_id, SERVO_SERVO_MODE, 2, data))
+  {
+    std::cout << "Servo: " << static_cast<unsigned>(servo_id) << " failed to get servo mode" << std::endl;
+    return 0;
+  }
+  return data;
+}
+
+uint8_t B3MInterface::getTrajectoryType(uint8_t servo_id)
+{
+  uint8_t data;
+  if (!b3m_driver_.read(COMMAND_TYPE_READ, RETURN_ERROR_STATUS, servo_id, SERVO_RUN_MODE, 1, data))
+  {
+    std::cout << "Servo: " << static_cast<unsigned>(servo_id) << " failed to get trajectory type" << std::endl;
+    return 0;
+  }
+  return data;
+}
+
+short B3MInterface::getDesiredPosition(uint8_t servo_id)
+{
+  short data;
+  if (!b3m_driver_.read(COMMAND_TYPE_READ, RETURN_ERROR_STATUS, servo_id, SERVO_DESIRED_POSITION, 2, data))
+  {
+    std::cout << "Servo: " << static_cast<unsigned>(servo_id) << " failed to get desired position" << std::endl;
+    return 0;
+  }
+  return data;
+}
+
+short B3MInterface::getCurrentPosition(uint8_t servo_id)
+{
+  short data;
+  if (!b3m_driver_.read(COMMAND_TYPE_READ, RETURN_ERROR_STATUS, servo_id, SERVO_CURRENT_POSITION, 2, data))
+  {
+    std::cout << "Servo: " << static_cast<unsigned>(servo_id) << " failed to get current position" << std::endl;
+    return 0;
+  }
+  return data;
+}
+
+short B3MInterface::getPreviousPosition(uint8_t servo_id)
+{
+  short data;
+  if (!b3m_driver_.read(COMMAND_TYPE_READ, RETURN_ERROR_STATUS, servo_id, SERVO_PREVIOUS_POSITION, 2, data))
+  {
+    std::cout << "Servo: " << static_cast<unsigned>(servo_id) << " failed to get previous position" << std::endl;
+    return 0;
+  }
+  return data;
+}
+
+short B3MInterface::getDesiredVelocity(uint8_t servo_id)
+{
+  short data;
+  if (!b3m_driver_.read(COMMAND_TYPE_READ, RETURN_ERROR_STATUS, servo_id, SERVO_DESIRED_VELOCITY, 2, data))
+  {
+    std::cout << "Servo: " << static_cast<unsigned>(servo_id) << " failed to get desired velocity" << std::endl;
+    return 0;
+  }
+  return data;
+}
+
+short B3MInterface::getCurrentVelocity(uint8_t servo_id)
+{
+  short data;
+  if (!b3m_driver_.read(COMMAND_TYPE_READ, RETURN_ERROR_STATUS, servo_id, SERVO_CURRENT_VELOCITY, 2, data))
+  {
+    std::cout << "Servo: " << static_cast<unsigned>(servo_id) << " failed to get current velocity" << std::endl;
+    return 0;
+  }
+  return data;
+}
+
+short B3MInterface::getPreviousVelocity(uint8_t servo_id)
+{
+  short data;
+  if (!b3m_driver_.read(COMMAND_TYPE_READ, RETURN_ERROR_STATUS, servo_id, SERVO_PREVIOUS_VELOCITY, 2, data))
+  {
+    std::cout << "Servo: " << static_cast<unsigned>(servo_id) << " failed to get previous velocity" << std::endl;
+    return 0;
+  }
+  return data;
+}
+
+unsigned short B3MInterface::getDesiredTime(uint8_t servo_id)
+{
+  unsigned short data;
+  if (!b3m_driver_.read(COMMAND_TYPE_READ, RETURN_ERROR_STATUS, servo_id, SERVO_DESIRED_TIME, 2, data))
+  {
+    std::cout << "Servo: " << static_cast<unsigned>(servo_id) << " failed to get desired time" << std::endl;
+    return 0;
+  }
+  return data;
+}
+
+unsigned short B3MInterface::getRunningTime(uint8_t servo_id)
+{
+  unsigned short data;
+  if (!b3m_driver_.read(COMMAND_TYPE_READ, RETURN_ERROR_STATUS, servo_id, SERVO_RUNNING_TIME, 2, data))
+  {
+    std::cout << "Servo: " << static_cast<unsigned>(servo_id) << " failed to get running time" << std::endl;
+    return 0;
+  }
+  return data;
+}
+
+unsigned short B3MInterface::getWorkingTime(uint8_t servo_id)
+{
+  unsigned short data;
+  if (!b3m_driver_.read(COMMAND_TYPE_READ, RETURN_ERROR_STATUS, servo_id, SERVO_WORKING_TIME, 2, data))
+  {
+    std::cout << "Servo: " << static_cast<unsigned>(servo_id) << " failed to get working time" << std::endl;
+    return 0;
+  }
+  return data;
+}
+
+short B3MInterface::getDesiredTorque(uint8_t servo_id)
+{
+  short data;
+  if (!b3m_driver_.read(COMMAND_TYPE_READ, RETURN_ERROR_STATUS, servo_id, SERVO_DESIRED_TORQUE, 2, data))
+  {
+    std::cout << "Servo: " << static_cast<unsigned>(servo_id) << " failed to get desired torque" << std::endl;
+    return 0;
+  }
+  return data;
+}
+
+unsigned long B3MInterface::getSystemClock(uint8_t servo_id)
+{
+  unsigned long data;
+  if (!b3m_driver_.read(COMMAND_TYPE_READ, RETURN_ERROR_STATUS, servo_id, SERVO_SYSTEM_CLOCK, 4, data))
+  {
+    std::cout << "Servo: " << static_cast<unsigned>(servo_id) << " failed to get system clock" << std::endl;
+    return 0;
+  }
+  return data;
+}
+
+unsigned short B3MInterface::getSamplingTime(uint8_t servo_id)
+{
+  unsigned short data;
+  if (!b3m_driver_.read(COMMAND_TYPE_READ, RETURN_ERROR_STATUS, servo_id, SERVO_SAMPLING_TIME, 2, data))
+  {
+    std::cout << "Servo: " << static_cast<unsigned>(servo_id) << " failed to get sampling time" << std::endl;
+    return 0;
+  }
+  return data;
+}
+
+short B3MInterface::getMCUTemp(uint8_t servo_id)
+{
+  short data;
+  if (!b3m_driver_.read(COMMAND_TYPE_READ, RETURN_ERROR_STATUS, servo_id, SERVO_MCU_TEMP, 2, data))
+  {
+    std::cout << "Servo: " << static_cast<unsigned>(servo_id) << " failed to get MCU temp" << std::endl;
+    return 0;
+  }
+  return data;
+}
+
+short B3MInterface::getMotorTemp(uint8_t servo_id)
+{
+  short data;
+  if (!b3m_driver_.read(COMMAND_TYPE_READ, RETURN_ERROR_STATUS, servo_id, SERVO_MOTOR_TEMP, 2, data))
+  {
+    std::cout << "Servo: " << static_cast<unsigned>(servo_id) << " failed to get motor temp" << std::endl;
+    return 0;
+  }
+  return data;
+}
+
+short B3MInterface::getCurrent(uint8_t servo_id)
+{
+  short data;
+  if (!b3m_driver_.read(COMMAND_TYPE_READ, RETURN_ERROR_STATUS, servo_id, SERVO_CURRENT, 2, data))
+  {
+    std::cout << "Servo: " << static_cast<unsigned>(servo_id) << " failed to get current" << std::endl;
+    return 0;
+  }
+  return data;
+}
+
+unsigned short B3MInterface::getInputVoltage(uint8_t servo_id)
+{
+  unsigned short data;
+  if (!b3m_driver_.read(COMMAND_TYPE_READ, RETURN_ERROR_STATUS, servo_id, SERVO_INPUT_VOLTAGE, 2, data))
+  {
+    std::cout << "Servo: " << static_cast<unsigned>(servo_id) << " failed to get input voltage" << std::endl;
+    return 0;
+  }
+  return data;
+}
+
+unsigned short B3MInterface::getPWMCount(uint8_t servo_id)
+{
+  unsigned short data;
+  if (!b3m_driver_.read(COMMAND_TYPE_READ, RETURN_ERROR_STATUS, servo_id, SERVO_PWM_DUTY, 2, data))
+  {
+    std::cout << "Servo: " << static_cast<unsigned>(servo_id) << " failed to get PWM count" << std::endl;
+    return 0;
+  }
+  return data;
+}
+
+unsigned short B3MInterface::getPWMFrequency(uint8_t servo_id)
+{
+  unsigned short data;
+  if (!b3m_driver_.read(COMMAND_TYPE_READ, RETURN_ERROR_STATUS, servo_id, SERVO_PWM_FREQUENCY, 2, data))
+  {
+    std::cout << "Servo: " << static_cast<unsigned>(servo_id) << " failed to get PWM frequency" << std::endl;
+    return 0;
+  }
+  return data;
+}
+
+unsigned short B3MInterface::getCurrentEncoderValue(uint8_t servo_id)
+{
+  unsigned short data;
+  if (!b3m_driver_.read(COMMAND_TYPE_READ, RETURN_ERROR_STATUS, servo_id, SERVO_ENCODER_VALUE, 2, data))
+  {
+    std::cout << "Servo: " << static_cast<unsigned>(servo_id) << " failed to get current encoder value" << std::endl;
+    return 0;
+  }
+  return data;
+}
+
+long B3MInterface::getTotalEncoderCount(uint8_t servo_id)
+{
+  long data;
+  if (!b3m_driver_.read(COMMAND_TYPE_READ, RETURN_ERROR_STATUS, servo_id, SERVO_ENCODER_COUNT, 4, data))
+  {
+    std::cout << "Servo: " << static_cast<unsigned>(servo_id) << " failed to get total encoder count" << std::endl;
+    return 0;
+  }
+  return data;
+}
+
+uint8_t B3MInterface::getHallICState(uint8_t servo_id)
+{
+  uint8_t data;
+  if (!b3m_driver_.read(COMMAND_TYPE_READ, RETURN_ERROR_STATUS, servo_id, SERVO_HALLIC_STATE, 1, data))
+  {
+    std::cout << "Servo: " << static_cast<unsigned>(servo_id) << " failed to get hall IC state" << std::endl;
+    return 0;
+  }
+  return data;
+}
 
 // control related functions
 bool B3MInterface::setPIDGainPresetNo(uint8_t servo_id, uint8_t no)
@@ -518,3 +1000,279 @@ bool B3MInterface::setDynamicFriction2(uint8_t servo_id, unsigned short dynamic_
   }
   return true;
 }
+
+uint8_t B3MInterface::getPIDGainPresetNo(uint8_t servo_id)
+{
+  uint8_t data;
+  if (!b3m_driver_.read(COMMAND_TYPE_READ, RETURN_ERROR_STATUS, servo_id, CONTROL_GAIN_PRESETNO, 1, data))
+  {
+    std::cout << "Servo: " << static_cast<unsigned>(servo_id) << " failed to get hall IC state" << std::endl;
+    return 0;
+  }
+  return data;
+}
+
+unsigned long B3MInterface::getPGain0(uint8_t servo_id)
+{
+  unsigned long data;
+  if (!b3m_driver_.read(COMMAND_TYPE_READ, RETURN_ERROR_STATUS, servo_id, CONTROL_KP0, 4, data))
+  {
+    std::cout << "Servo: " << static_cast<unsigned>(servo_id) << " failed to get P gain 0" << std::endl;
+    return 0;
+  }
+  return data;
+}
+
+unsigned long B3MInterface::getIGain0(uint8_t servo_id)
+{
+  unsigned long data;
+  if (!b3m_driver_.read(COMMAND_TYPE_READ, RETURN_ERROR_STATUS, servo_id, CONTROL_KI0, 4, data))
+  {
+    std::cout << "Servo: " << static_cast<unsigned>(servo_id) << " failed to get I gain 0" << std::endl;
+    return 0;
+  }
+  return data;
+}
+
+unsigned long B3MInterface::getDGain0(uint8_t servo_id)
+{
+  unsigned long data;
+  if (!b3m_driver_.read(COMMAND_TYPE_READ, RETURN_ERROR_STATUS, servo_id, CONTROL_KD0, 4, data))
+  {
+    std::cout << "Servo: " << static_cast<unsigned>(servo_id) << " failed to get D gain 0" << std::endl;
+    return 0;
+  }
+  return data;
+}
+
+unsigned short B3MInterface::getStaticFriction0(uint8_t servo_id)
+{
+  unsigned short data;
+  if (!b3m_driver_.read(COMMAND_TYPE_READ, RETURN_ERROR_STATUS, servo_id, CONTROL_STATIC_FRICTION0, 2, data))
+  {
+    std::cout << "Servo: " << static_cast<unsigned>(servo_id) << " failed to get static friction 0" << std::endl;
+    return 0;
+  }
+  return data;
+}
+
+unsigned short B3MInterface::getDynamicFriction0(uint8_t servo_id)
+{
+  unsigned short data;
+  if (!b3m_driver_.read(COMMAND_TYPE_READ, RETURN_ERROR_STATUS, servo_id, CONTROL_DYNAMIC_FRICTION0, 2, data))
+  {
+    std::cout << "Servo: " << static_cast<unsigned>(servo_id) << " failed to get dynamic friction 0" << std::endl;
+    return 0;
+  }
+  return data;
+}
+
+unsigned long B3MInterface::getPGain1(uint8_t servo_id)
+{
+  unsigned long data;
+  if (!b3m_driver_.read(COMMAND_TYPE_READ, RETURN_ERROR_STATUS, servo_id, CONTROL_KP1, 4, data))
+  {
+    std::cout << "Servo: " << static_cast<unsigned>(servo_id) << " failed to get P gain 1" << std::endl;
+    return 0;
+  }
+  return data;
+}
+
+unsigned long B3MInterface::getIGain1(uint8_t servo_id)
+{
+  unsigned long data;
+  if (!b3m_driver_.read(COMMAND_TYPE_READ, RETURN_ERROR_STATUS, servo_id, CONTROL_KI1, 4, data))
+  {
+    std::cout << "Servo: " << static_cast<unsigned>(servo_id) << " failed to get I gain 1" << std::endl;
+    return 0;
+  }
+  return data;
+}
+
+unsigned long B3MInterface::getDGain1(uint8_t servo_id)
+{
+  unsigned long data;
+  if (!b3m_driver_.read(COMMAND_TYPE_READ, RETURN_ERROR_STATUS, servo_id, CONTROL_KD1, 4, data))
+  {
+    std::cout << "Servo: " << static_cast<unsigned>(servo_id) << " failed to get D gain 1" << std::endl;
+    return 0;
+  }
+  return data;
+}
+
+unsigned short B3MInterface::getStaticFriction1(uint8_t servo_id)
+{
+  unsigned short data;
+  if (!b3m_driver_.read(COMMAND_TYPE_READ, RETURN_ERROR_STATUS, servo_id, CONTROL_STATIC_FRICTION1, 2, data))
+  {
+    std::cout << "Servo: " << static_cast<unsigned>(servo_id) << " failed to get static friction 1" << std::endl;
+    return 0;
+  }
+  return data;
+}
+
+unsigned short B3MInterface::getDynamicFriction1(uint8_t servo_id)
+{
+  unsigned short data;
+  if (!b3m_driver_.read(COMMAND_TYPE_READ, RETURN_ERROR_STATUS, servo_id, CONTROL_DYNAMIC_FRICTION1, 2, data))
+  {
+    std::cout << "Servo: " << static_cast<unsigned>(servo_id) << " failed to get dynamic friction 1" << std::endl;
+    return 0;
+  }
+  return data;
+}
+
+unsigned long B3MInterface::getPGain2(uint8_t servo_id)
+{
+  unsigned long data;
+  if (!b3m_driver_.read(COMMAND_TYPE_READ, RETURN_ERROR_STATUS, servo_id, CONTROL_KP2, 4, data))
+  {
+    std::cout << "Servo: " << static_cast<unsigned>(servo_id) << " failed to get P gain 2" << std::endl;
+    return 0;
+  }
+  return data;
+}
+
+unsigned long B3MInterface::getIGain2(uint8_t servo_id)
+{
+  unsigned long data;
+  if (!b3m_driver_.read(COMMAND_TYPE_READ, RETURN_ERROR_STATUS, servo_id, CONTROL_KI2, 4, data))
+  {
+    std::cout << "Servo: " << static_cast<unsigned>(servo_id) << " failed to get I gain 2" << std::endl;
+    return 0;
+  }
+  return data;
+}
+
+unsigned long B3MInterface::getDGain2(uint8_t servo_id)
+{
+  unsigned long data;
+  if (!b3m_driver_.read(COMMAND_TYPE_READ, RETURN_ERROR_STATUS, servo_id, CONTROL_KD2, 4, data))
+  {
+    std::cout << "Servo: " << static_cast<unsigned>(servo_id) << " failed to get D gain 2" << std::endl;
+    return 0;
+  }
+  return data;
+}
+
+unsigned short B3MInterface::getStaticFriction2(uint8_t servo_id)
+{
+  unsigned short data;
+  if (!b3m_driver_.read(COMMAND_TYPE_READ, RETURN_ERROR_STATUS, servo_id, CONTROL_STATIC_FRICTION2, 2, data))
+  {
+    std::cout << "Servo: " << static_cast<unsigned>(servo_id) << " failed to get static friction 2" << std::endl;
+    return 0;
+  }
+  return data;
+}
+
+unsigned short B3MInterface::getDynamicFriction2(uint8_t servo_id)
+{
+  unsigned short data;
+  if (!b3m_driver_.read(COMMAND_TYPE_READ, RETURN_ERROR_STATUS, servo_id, CONTROL_DYNAMIC_FRICTION2, 2, data))
+  {
+    std::cout << "Servo: " << static_cast<unsigned>(servo_id) << " failed to get dynamic friction 2" << std::endl;
+    return 0;
+  }
+  return data;
+}
+
+char B3MInterface::getModelVoltageClass(uint8_t servo_id)
+{
+  char data;
+  if (!b3m_driver_.read(COMMAND_TYPE_READ, RETURN_ERROR_STATUS, servo_id, CONFIG_MODEL_NUMBER_VOLTAGE_CLASS, 1, data))
+  {
+    std::cout << "Servo: " << static_cast<unsigned>(servo_id) << " failed to get model voltage class" << std::endl;
+    return 0;
+  }
+  return data;
+}
+
+uint8_t B3MInterface::getModelVersion(uint8_t servo_id)
+{
+  uint8_t data;
+  if (!b3m_driver_.read(COMMAND_TYPE_READ, RETURN_ERROR_STATUS, servo_id, CONFIG_MODEL_NUMBER_VERSION, 1, data))
+  {
+    std::cout << "Servo: " << static_cast<unsigned>(servo_id) << " failed to get model version" << std::endl;
+    return 0;
+  }
+  return data;
+}
+
+uint8_t B3MInterface::getModelCaseNumber(uint8_t servo_id)
+{
+  uint8_t data;
+  if (!b3m_driver_.read(COMMAND_TYPE_READ, RETURN_ERROR_STATUS, servo_id, CONFIG_MODEL_NUMBER_CASE, 1, data))
+  {
+    std::cout << "Servo: " << static_cast<unsigned>(servo_id) << " failed to get model case number" << std::endl;
+    return 0;
+  }
+  return data;
+}
+
+char B3MInterface::getModelMotorType(uint8_t servo_id)
+{
+  char data;
+  if (!b3m_driver_.read(COMMAND_TYPE_READ, RETURN_ERROR_STATUS, servo_id, CONFIG_MODEL_TYPE_MOTOR, 1, data))
+  {
+    std::cout << "Servo: " << static_cast<unsigned>(servo_id) << " failed to get model motor type" << std::endl;
+    return 0;
+  }
+  return data;
+}
+
+char B3MInterface::getModelDeviceType(uint8_t servo_id)
+{
+  char data;
+  if (!b3m_driver_.read(COMMAND_TYPE_READ, RETURN_ERROR_STATUS, servo_id, CONFIG_MODEL_TYPE_DEVICE, 1, data))
+  {
+    std::cout << "Servo: " << static_cast<unsigned>(servo_id) << " failed to get model device type" << std::endl;
+    return 0;
+  }
+  return data;
+}
+
+uint8_t B3MInterface::getFirmwareBuildNumber(uint8_t servo_id)
+{
+  uint8_t data;
+  if (!b3m_driver_.read(COMMAND_TYPE_READ, RETURN_ERROR_STATUS, servo_id, CONFIG_FW_BUILD, 1, data))
+  {
+    std::cout << "Servo: " << static_cast<unsigned>(servo_id) << " failed to get firmware build number" << std::endl;
+    return 0;
+  }
+  return data;
+}
+
+uint8_t B3MInterface::getFirmwareRevisionNumber(uint8_t servo_id)
+{
+  uint8_t data;
+  if (!b3m_driver_.read(COMMAND_TYPE_READ, RETURN_ERROR_STATUS, servo_id, CONFIG_FW_REVISION, 1, data))
+  {
+    std::cout << "Servo: " << static_cast<unsigned>(servo_id) << " failed to get firmware revision number" << std::endl;
+    return 0;
+  }
+  return data;
+}
+
+uint8_t B3MInterface::getFirmwareMinorVersion(uint8_t servo_id)
+{
+  uint8_t data;
+  if (!b3m_driver_.read(COMMAND_TYPE_READ, RETURN_ERROR_STATUS, servo_id, CONFIG_FW_MINOR, 1, data))
+  {
+    std::cout << "Servo: " << static_cast<unsigned>(servo_id) << " failed to get firmware minor version" << std::endl;
+    return 0;
+  }
+  return data;
+}
+
+uint8_t B3MInterface::getFirmwareMajorVersion(uint8_t servo_id)
+{
+  uint8_t data;
+  if (!b3m_driver_.read(COMMAND_TYPE_READ, RETURN_ERROR_STATUS, servo_id, CONFIG_FW_MAJOR, 1, data))
+  {
+    std::cout << "Servo: " << static_cast<unsigned>(servo_id) << " failed to get firmware major version" << std::endl;
+    return 0;
+  }
+  return data;
+}
+}  // namespace b3m_driver

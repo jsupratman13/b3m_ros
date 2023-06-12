@@ -19,6 +19,8 @@
 
 #include "b3m_driver/b3m_driver.hpp"
 
+namespace b3m_driver
+{
 class B3MInterface
 {
 private:
@@ -56,7 +58,7 @@ public:
   bool setMotorCWPWMLimit(uint8_t servo_id, uint8_t pwm);
   bool setMotorCCWPWMLimit(uint8_t servo_id, uint8_t pwm);
   uint8_t getServoID(uint8_t servo_id);
-  uint8_t getBaudrate(uint8_t servo_id);
+  unsigned long getBaudrate(uint8_t servo_id);
   short getPositionMin(uint8_t servo_id);
   short getPositionMax(uint8_t servo_id);
   short getPositionCenterOffset(uint8_t servo_id);
@@ -156,5 +158,6 @@ public:
   uint8_t getFirmwareRevisionNumber(uint8_t servo_id);
   uint8_t getFirmwareMinorVersion(uint8_t servo_id);
   uint8_t getFirmwareMajorVersion(uint8_t servo_id);
-};      // class B3MInterface
+};  // class B3MInterface
+}  // namespace b3m_driver
 #endif  // B3M_INTERFACE_HPP_

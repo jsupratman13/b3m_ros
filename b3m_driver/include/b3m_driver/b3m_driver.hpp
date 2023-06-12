@@ -22,6 +22,8 @@
 #include <cstdint>
 #include <string>
 
+namespace b3m_driver
+{
 class B3MDriver
 {
 public:
@@ -40,8 +42,8 @@ public:
   void send(uint8_t command_type, uint8_t option, std::vector<uint8_t> servo_ids, std::vector<short> positions,
             unsigned short time);
 
-  uint8_t read(uint8_t command_type, uint8_t option, uint8_t servo_id, uint8_t address, uint8_t length,
-               std::vector<uint8_t>& data);
+  template <typename T>
+  uint8_t read(uint8_t command_type, uint8_t option, uint8_t servo_id, uint8_t address, uint8_t length, T& data);
 
 private:
   serial::Serial serial_;
@@ -78,5 +80,5 @@ private:
     return static_cast<uint8_t>(sum & 0xFF);
   }
 };
-
+}  // namespace b3m_driver
 #endif  // B3M_DRIVER_HPP_

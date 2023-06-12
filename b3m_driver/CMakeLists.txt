@@ -15,13 +15,13 @@ include_directories(include ${catkin_INCLUDE_DIRS})
 
 add_library(${PROJECT_NAME} src/b3m_driver.cpp src/b3m_interface.cpp)
 
-# add_executable(sample_${PROJECT_NAME}_node src/sample_b3m_driver_node.cpp)
-# add_dependencies(sample_${PROJECT_NAME}_node ${catkin_EXPORTED_TARGETS})
-# target_link_libraries(
-#   sample_${PROJECT_NAME}_node
-#   ${PROJECT_NAME}
-#   ${catkin_LIBRARIES}
-# )
+add_executable(sample_${PROJECT_NAME}_node src/sample_b3m_driver_node.cpp)
+add_dependencies(sample_${PROJECT_NAME}_node ${catkin_EXPORTED_TARGETS})
+target_link_libraries(
+  sample_${PROJECT_NAME}_node
+  ${PROJECT_NAME}
+  ${catkin_LIBRARIES}
+)
 
 install(
   TARGETS ${PROJECT_NAME}
@@ -33,7 +33,7 @@ install(
   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
 )
 
-# install(
-#   DIRECTORY sample_${PROJECT_NAME}_node RUNTIME
-#   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-# )
+install(
+  DIRECTORY sample_${PROJECT_NAME}_node RUNTIME
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)

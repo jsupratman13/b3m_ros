@@ -17,6 +17,8 @@
 
 #include "b3m_driver/b3m_driver.hpp"
 
+namespace b3m_driver
+{
 void B3MDriver::open(const std::string& port, uint32_t baudrate)
 {
   serial_.setPort(port);
@@ -228,3 +230,38 @@ void B3MDriver::send(uint8_t command_type, uint8_t option, std::vector<uint8_t> 
   send_data.push_back(checkSum(send_data));
   serial_.write(send_data);
 }
+
+/**
+ * @brief read status
+ *
+ * @tparam T is the data type to send. Should be either uint8_t, short, unsigned short, long or unsigned long
+ * @param command_type is the type of read command. Should be COMMAND_TYPE_READ.
+ * @param option is the type of error response. Should be either RETURN_ERROR_STATUS, RETURN_MOTOR_STATUS,
+ * RETURN_UART_STATUS, or RETURN_COMMAND_STATUS
+ * @param servo_id is the servo id to read from.
+ * @param address is the address to read from.
+ * @param length is the expected data length to read.
+ * @param data is the data to read into. The read data will be stored in this variable.
+ * @return uint8_t is the error code depending on what type of error response. 0 means no error.
+ */
+template <typename T>
+uint8_t B3MDriver::read(uint8_t command_type, uint8_t option, uint8_t servo_id, uint8_t address, uint8_t length,
+                        T& data)
+{
+  uint8_t data_length = 7;
+  std::vector<uint8_t> send_data(data_length);
+  send_data.push_back(data_length);
+  send_data.push_back(command_type);
+  send_data.push_back(option);
+  send_data.push_back(servo_id);
+  send_data.push_back(address);
+  send_data.push_back(length);
+  send_data.push_back(checkSum(send_data));
+  serial_.write(send_data);
+
+  std::vector<uint8_t> recv_data(5 + length);
+  serial_.read(recv_data, 5 + length);
+  data = fromLittleEndianBytes<T>(recv_data.begin() + 4, recv_data.end() - 1);
+  return recv_data[2];
+}
+}  // namespace b3m_driver
