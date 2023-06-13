@@ -9,6 +9,4 @@
   <buildtool_depend>catkin</buildtool_depend>
   <depend>roscpp</depend>
   <depend>serial</depend>
-
-  <export />
 </package>

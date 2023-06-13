@@ -16,7 +16,6 @@
  ********************************************************************/
 
 #include "b3m_driver/b3m_interface.hpp"
-#include "b3m_driver/b3m_driver.hpp"
 #include "b3m_driver/b3m_map.hpp"
 #include <ros/ros.h>
 
@@ -32,7 +31,7 @@ int main(int argc, char** argv)
 
   try
   {
-    // b3m.connect("/dev/ttyUSB0", 115200);
+    b3m.connect("/dev/ttyUSB0", 115200);
     ROS_INFO_STREAM("successfully connected to /dev/ttyUSB0");
   }
   catch (std::runtime_error& e)
@@ -41,15 +40,13 @@ int main(int argc, char** argv)
     ros::shutdown();
     return 1;
   }
-
-  // set b3m free mode
-  // b3m.setServoMode(0, 0x10);
-  // set b3m position control mode
-  // b3m.setServoMode(0, OPTIONS_RUN_FREE);
-  // b3m.setServoMode(0, OPTIONS_CONTROL_POSITION);
-  // b3m.setTrajectoryType(0, TRAJECTORY_EVEN);
-  // set b3m normal mode
-  // b3m.setServoMode(0, OPTIONS_RUN_NORMAL);
-  // set b3m position
-  // b3m.setDesiredPosition(0, 100);
+  //  set b3m free mode
+  b3m.setServoMode(0, OPTIONS_RUN_FREE);
+  //  set b3m position control mode
+  b3m.setServoMode(0, OPTIONS_CONTROL_POSITION);
+  b3m.setTrajectoryType(0, TRAJECTORY_EVEN);
+  //  set b3m normal mode
+  b3m.setServoMode(0, OPTIONS_RUN_NORMAL);
+  //  set b3m position
+  b3m.setDesiredPosition(0, 100);
 }
