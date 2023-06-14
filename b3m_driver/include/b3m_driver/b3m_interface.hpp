@@ -17,6 +17,7 @@
 #ifndef B3M_INTERFACE_HPP_
 #define B3M_INTERFACE_HPP_
 
+#include <cstdint>
 #include "b3m_driver/b3m_driver.hpp"
 
 namespace b3m_driver
@@ -35,6 +36,8 @@ public:
   void load(std::vector<uint8_t> servo_ids);
   void save(uint8_t servo_id);
   void save(std::vector<uint8_t> servo_ids);
+  void reset(uint8_t servo_id);
+  void reset(std::vector<uint8_t> servo_ids);
 
   // system related functions
   bool setServoID(uint8_t servo_id, uint8_t new_servo_id);

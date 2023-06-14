@@ -18,6 +18,7 @@
 #include "b3m_driver/b3m_interface.hpp"
 #include "b3m_driver/b3m_map.hpp"
 #include <ros/ros.h>
+#include <iostream>
 
 int main(int argc, char** argv)
 {
@@ -25,13 +26,9 @@ int main(int argc, char** argv)
   ros::NodeHandle nh;
 
   b3m_driver::B3MInterface b3m;
-  ros::AsyncSpinner spinner(1);
-  spinner.start();
-  ros::Rate rate(5);
-
   try
   {
-    b3m.connect("/dev/ttyUSB0", 115200);
+    b3m.connect("/dev/ttyUSB0", 1500000);
     ROS_INFO_STREAM("successfully connected to /dev/ttyUSB0");
   }
   catch (std::runtime_error& e)
@@ -40,13 +37,18 @@ int main(int argc, char** argv)
     ros::shutdown();
     return 1;
   }
+  // reset b3m
+  b3m.reset(1);
+  std::this_thread::sleep_for(std::chrono::milliseconds(100));
   //  set b3m free mode
-  b3m.setServoMode(0, OPTIONS_RUN_FREE);
+  b3m.setServoMode(1, OPTIONS_RUN_FREE);
   //  set b3m position control mode
-  b3m.setServoMode(0, OPTIONS_CONTROL_POSITION);
-  b3m.setTrajectoryType(0, TRAJECTORY_EVEN);
+  b3m.setServoMode(1, OPTIONS_CONTROL_POSITION);
+  b3m.setTrajectoryType(1, TRAJECTORY_EVEN);
   //  set b3m normal mode
-  b3m.setServoMode(0, OPTIONS_RUN_NORMAL);
+  b3m.setServoMode(1, OPTIONS_RUN_NORMAL);
   //  set b3m position
-  b3m.setDesiredPosition(0, 100);
+  b3m.setDesiredPosition(1, -3000);
+  ros::Duration(1).sleep();
+  ROS_INFO_STREAM("current position: " << b3m.getCurrentPosition(1));
 }

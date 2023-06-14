@@ -19,8 +19,13 @@
 
 #include <serial/serial.h>
 #include <sys/types.h>
+#include <cstddef>
 #include <cstdint>
+#include <stdexcept>
 #include <string>
+#include <iostream>
+#include <iomanip>
+#include <thread>
 
 namespace b3m_driver
 {
@@ -65,11 +70,17 @@ public:
    */
   uint8_t send(uint8_t command_type, uint8_t option, uint8_t servo_id)
   {
+    serial_.flushOutput();
+
     std::vector<uint8_t> servo_ids = { servo_id };
     send(command_type, option, servo_ids);
 
-    std::vector<uint8_t> recv_data(5);
+    serial_.flushInput();
+    serial_.waitReadable();
+
+    std::vector<uint8_t> recv_data;
     serial_.read(recv_data, 5);
+
     return recv_data[2];
   }
 
@@ -83,12 +94,55 @@ public:
    */
   void send(uint8_t command_type, uint8_t option, std::vector<uint8_t> servo_ids)
   {
+    serial_.flushOutput();
+
     uint8_t data_length = 4 + servo_ids.size();
     std::vector<uint8_t> send_data;
     send_data.push_back(data_length);
     send_data.push_back(command_type);
     send_data.push_back(option);
     send_data.insert(send_data.end(), servo_ids.begin(), servo_ids.end());
+    send_data.push_back(checkSum(send_data));
+    serial_.write(send_data);
+  }
+
+  /**
+   * @brief send single command for reset
+   *
+   * @param command_type is the type of send command. Should be COMMAND_TYPE_RESET.
+   * @param option is the type of error response. Should be either RETURN_ERROR_STATUS, RETURN_MOTOR_STATUS,
+   * RETURN_UART_STATUS, or RETURN_COMMAND_STATUS
+   * @param servo_id is the servo id to send command to.
+   * @param time is the time to reset
+   */
+  void send(uint8_t command_type, uint8_t option, uint8_t servo_id, uint8_t time)
+  {
+    serial_.flushOutput();
+
+    std::vector<uint8_t> servo_ids = { servo_id };
+    send(command_type, option, servo_ids, time);
+  }
+
+  /**
+   * @brief send multiple command for reset
+   *
+   * @param command_type is the type of send command. Should be COMMAND_TYPE_RESET.
+   * @param option is the type of error response. Should be either RETURN_ERROR_STATUS, RETURN_MOTOR_STATUS,
+   * RETURN_UART_STATUS, or RETURN_COMMAND_STATUS
+   * @param servo_ids is the list of servo ids to send command to.
+   * @param time is the time to reset
+   */
+  void send(uint8_t command_type, uint8_t option, std::vector<uint8_t> servo_ids, uint8_t time)
+  {
+    serial_.flushOutput();
+
+    uint8_t data_length = 5 + servo_ids.size();
+    std::vector<uint8_t> send_data;
+    send_data.push_back(data_length);
+    send_data.push_back(command_type);
+    send_data.push_back(option);
+    send_data.insert(send_data.end(), servo_ids.begin(), servo_ids.end());
+    send_data.push_back(time);
     send_data.push_back(checkSum(send_data));
     serial_.write(send_data);
   }
@@ -108,12 +162,18 @@ public:
   template <typename T>
   uint8_t send(uint8_t command_type, uint8_t option, uint8_t servo_id, T data, uint8_t address)
   {
+    serial_.flushOutput();
+
     std::vector<T> multi_data = { data };
     std::vector<uint8_t> servo_ids = { servo_id };
     send<T>(command_type, option, servo_ids, multi_data, address);
 
-    std::vector<uint8_t> recv_data(5);
+    serial_.flushInput();
+    serial_.waitReadable();
+
+    std::vector<uint8_t> recv_data;
     serial_.read(recv_data, 5);
+
     return recv_data[2];
   }
 
@@ -131,8 +191,10 @@ public:
   template <typename T>
   void send(uint8_t command_type, uint8_t option, std::vector<uint8_t> servo_ids, std::vector<T> data, uint8_t address)
   {
+    serial_.flushOutput();
+
     std::vector<uint8_t> multi_data_bytes;
-    for (std::size_t index; index < servo_ids.size(); index++)
+    for (std::size_t index = 0; index < servo_ids.size(); index++)
     {
       multi_data_bytes.push_back(servo_ids[index]);
       std::vector<uint8_t> data_bytes = toLittleEndianBytes(data[index]);
@@ -140,7 +202,7 @@ public:
     }
 
     uint8_t data_length = 6 + multi_data_bytes.size();
-    std::vector<uint8_t> send_data(data_length);
+    std::vector<uint8_t> send_data;
     send_data.push_back(data_length);
     send_data.push_back(command_type);
     send_data.push_back(option);
@@ -148,48 +210,7 @@ public:
     send_data.push_back(address);
     send_data.push_back(servo_ids.size());
     send_data.push_back(checkSum(send_data));
-    serial_.write(send_data);
-  }
 
-  /**
-   * @brief send single command for reset
-   *
-   * @param command_type is the type of send command. Should be COMMAND_TYPE_RESET.
-   * @param option is the type of error response. Should be either RETURN_ERROR_STATUS, RETURN_MOTOR_STATUS,
-   * RETURN_UART_STATUS, or RETURN_COMMAND_STATUS
-   * @param servo_id is the servo id to send command to.
-   * @param time is the time to reset
-   * @return uint8_t is the error code depending on what type of error response. 0 means no error.
-   */
-  uint8_t send(uint8_t command_type, uint8_t option, uint8_t servo_id, uint8_t time)
-  {
-    std::vector<uint8_t> servo_ids = { servo_id };
-    send(command_type, option, servo_ids, time);
-
-    std::vector<uint8_t> recv_data(5);
-    serial_.read(recv_data, 5);
-    return recv_data[2];
-  }
-
-  /**
-   * @brief send multiple command for reset
-   *
-   * @param command_type is the type of send command. Should be COMMAND_TYPE_RESET.
-   * @param option is the type of error response. Should be either RETURN_ERROR_STATUS, RETURN_MOTOR_STATUS,
-   * RETURN_UART_STATUS, or RETURN_COMMAND_STATUS
-   * @param servo_ids is the list of servo ids to send command to.
-   * @param time is the time to reset
-   */
-  void send(uint8_t command_type, uint8_t option, std::vector<uint8_t> servo_ids, uint8_t time)
-  {
-    uint8_t data_length = 5 + servo_ids.size();
-    std::vector<uint8_t> send_data(data_length);
-    send_data.push_back(data_length);
-    send_data.push_back(command_type);
-    send_data.push_back(option);
-    send_data.insert(send_data.end(), servo_ids.begin(), servo_ids.end());
-    send_data.push_back(time);
-    send_data.push_back(checkSum(send_data));
     serial_.write(send_data);
   }
 
@@ -206,12 +227,18 @@ public:
    */
   uint8_t send(uint8_t command_type, uint8_t option, uint8_t servo_id, short position, unsigned short time)
   {
+    serial_.flushOutput();
+
     std::vector<short> multi_positions = { position };
     std::vector<uint8_t> servo_ids = { servo_id };
     send(command_type, option, servo_ids, multi_positions, time);
 
-    std::vector<uint8_t> recv_data(5);
-    serial_.read(recv_data, 5);
+    serial_.flushInput();
+    serial_.waitReadable();
+
+    std::vector<uint8_t> recv_data;
+    serial_.read(recv_data, 7);
+
     return recv_data[2];
   }
 
@@ -228,8 +255,10 @@ public:
   void send(uint8_t command_type, uint8_t option, std::vector<uint8_t> servo_ids, std::vector<short> positions,
             unsigned short time)
   {
+    serial_.flushOutput();
+
     std::vector<uint8_t> multi_data_bytes;
-    for (std::size_t index; index < servo_ids.size(); index++)
+    for (std::size_t index = 0; index < servo_ids.size(); index++)
     {
       multi_data_bytes.push_back(servo_ids[index]);
       std::vector<uint8_t> data_bytes = toLittleEndianBytes(positions[index]);
@@ -237,8 +266,8 @@ public:
     }
     std::vector<uint8_t> time_bytes = toLittleEndianBytes(time);
 
-    uint8_t data_length = 6 + multi_data_bytes.size() + time_bytes.size();
-    std::vector<uint8_t> send_data(data_length);
+    uint8_t data_length = 4 + multi_data_bytes.size() + time_bytes.size();
+    std::vector<uint8_t> send_data;
     send_data.push_back(data_length);
     send_data.push_back(command_type);
     send_data.push_back(option);
@@ -262,10 +291,12 @@ public:
    * @return uint8_t is the error code depending on what type of error response. 0 means no error.
    */
   template <typename T>
-  uint8_t read(uint8_t command_type, uint8_t option, uint8_t servo_id, uint8_t address, uint8_t length, T& data)
+  uint8_t read(uint8_t command_type, uint8_t option, uint8_t servo_id, uint8_t address, int length, T& data)
   {
+    serial_.flushOutput();
+
     uint8_t data_length = 7;
-    std::vector<uint8_t> send_data(data_length);
+    std::vector<uint8_t> send_data;
     send_data.push_back(data_length);
     send_data.push_back(command_type);
     send_data.push_back(option);
@@ -275,10 +306,15 @@ public:
     send_data.push_back(checkSum(send_data));
     serial_.write(send_data);
 
-    std::vector<uint8_t> recv_data(5 + length);
+    serial_.flushInput();
+    // std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    serial_.waitReadable();
+
+    std::vector<uint8_t> recv_data;
     serial_.read(recv_data, 5 + length);
     std::vector<uint8_t> data_bytes(recv_data.begin() + 4, recv_data.end() - 1);
     data = fromLittleEndianBytes<T>(data_bytes);
+
     return recv_data[2];
   }
 
@@ -299,6 +335,10 @@ private:
   template <typename T>
   T fromLittleEndianBytes(std::vector<uint8_t> bytes)
   {
+    if (bytes.size() != sizeof(T))
+    {
+      throw std::invalid_argument("bytes size does not match data size");
+    }
     T data = 0;
     for (size_t i = 0; i < sizeof(data); i++)
     {

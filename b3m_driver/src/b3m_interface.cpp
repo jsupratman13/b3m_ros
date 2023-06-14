@@ -62,6 +62,11 @@ void B3MInterface::save(std::vector<uint8_t> servo_ids)
   b3m_driver_.send(COMMAND_TYPE_SAVE, RETURN_ERROR_STATUS, std::move(servo_ids));
 }
 
+void B3MInterface::reset(uint8_t servo_id)
+{
+  b3m_driver_.send(COMMAND_TYPE_RESET, RETURN_ERROR_STATUS, servo_id, 100);
+}
+
 // system related functions
 bool B3MInterface::setServoID(uint8_t servo_id, uint8_t new_servo_id)
 {
@@ -498,7 +503,7 @@ bool B3MInterface::setServoOption(uint8_t servo_id, uint8_t option)
 
 bool B3MInterface::setServoMode(uint8_t servo_id, uint8_t mode)
 {
-  if (!b3m_driver_.send(COMMAND_TYPE_WRITE, RETURN_ERROR_STATUS, servo_id, mode, SERVO_SERVO_MODE))
+  if (b3m_driver_.send(COMMAND_TYPE_WRITE, RETURN_ERROR_STATUS, servo_id, mode, SERVO_SERVO_MODE) != 0x00)
   {
     std::cout << "Servo: " << static_cast<unsigned>(servo_id) << " failed to set servo mode" << std::endl;
     return false;
@@ -518,7 +523,7 @@ bool B3MInterface::setTrajectoryType(uint8_t servo_id, uint8_t type)
 
 bool B3MInterface::setDesiredPosition(uint8_t servo_id, short position)
 {
-  if (!b3m_driver_.send(COMMAND_TYPE_WRITE, RETURN_ERROR_STATUS, servo_id, position, SERVO_DESIRED_POSITION))
+  if (!b3m_driver_.send(COMMAND_TYPE_POSITION, RETURN_ERROR_STATUS, servo_id, position, 0))
   {
     std::cout << "Servo: " << static_cast<unsigned>(servo_id) << " failed to set desired position" << std::endl;
     return false;
@@ -623,10 +628,10 @@ short B3MInterface::getDesiredPosition(uint8_t servo_id)
 short B3MInterface::getCurrentPosition(uint8_t servo_id)
 {
   short data;
-  if (!b3m_driver_.read(COMMAND_TYPE_READ, RETURN_ERROR_STATUS, servo_id, SERVO_CURRENT_POSITION, 2, data))
+  if (!b3m_driver_.read<short>(COMMAND_TYPE_READ, RETURN_ERROR_STATUS, servo_id, SERVO_CURRENT_POSITION, 2, data))
   {
     std::cout << "Servo: " << static_cast<unsigned>(servo_id) << " failed to get current position" << std::endl;
-    return 0;
+    return data;
   }
   return data;
 }
