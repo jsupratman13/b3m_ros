@@ -131,7 +131,6 @@
 #define MOTOR_ERROR 0x02
 #define UART_ERROR 0x03
 #define COMMAND_ERROR 0x04
-#define CLEAR_ERROR 0x80
 
 // system errors
 #define RETURN_SYSTEM_STATUS 0x01
@@ -165,6 +164,9 @@
 #define COMMAND_ERROR_SIZE 0x04
 #define COMMAND_ERROR_ADDRESS 0x08
 #define COMMAND_ERROR_WRONG_COMMAND 0x10
+
+// clear error
+#define CLEAR_ERROR 0x80
 
 // trajectory type
 #define TRAJECTORY_NORMAL 0x00

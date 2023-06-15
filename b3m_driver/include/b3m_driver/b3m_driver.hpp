@@ -25,7 +25,7 @@
 #include <string>
 #include <iostream>
 #include <iomanip>
-#include <thread>
+#include "b3m_driver/b3m_map.hpp"
 
 namespace b3m_driver
 {
@@ -60,46 +60,39 @@ public:
   }
 
   /**
-   * @brief send single command
+   * @brief Save RAM parameters to ROM for multiple servos
    *
-   * @param command_type is the type of send command. Should be either COMMAND_TYPE_LOAD or COMMAND_TYPE_SAVE
-   * @param option is the type of error response. Should be either RETURN_ERROR_STATUS, RETURN_MOTOR_STATUS,
-   * RETURN_UART_STATUS, or RETURN_COMMAND_STATUS
    * @param servo_id is the servo id to send command to.
+   * @param option is the type of error response. Should be either RETURN_ERROR_STATUS, RETURN_MOTOR_STATUS,
+   * RETURN_UART_STATUS, or RETURN_COMMAND_STATUS or CLEAR_ERROR.
    * @return uint8_t is the error code depending on what type of error response. 0 means no error.
    */
-  uint8_t send(uint8_t command_type, uint8_t option, uint8_t servo_id)
+  uint8_t save(uint8_t servo_id, uint8_t option)
   {
-    serial_.flushOutput();
-
     std::vector<uint8_t> servo_ids = { servo_id };
-    send(command_type, option, servo_ids);
+    save(servo_ids, option);
 
     serial_.flushInput();
     serial_.waitReadable();
-
     std::vector<uint8_t> recv_data;
     serial_.read(recv_data, 5);
-
     return recv_data[2];
   }
 
   /**
-   * @brief send multiple command
+   * @brief Save RAM parameters to ROM for multiple servos
    *
-   * @param command_type is the type of send command. Should be either COMMAND_TYPE_LOAD or COMMAND_TYPE_SAVE
-   * @param option is the type of error response. Should be either RETURN_ERROR_STATUS, RETURN_MOTOR_STATUS,
-   * RETURN_UART_STATUS, or RETURN_COMMAND_STATUS
    * @param servo_ids is the list of servo ids to send command to.
+   * @param option is the type of error response. Should be either RETURN_ERROR_STATUS, RETURN_MOTOR_STATUS,
+   * RETURN_UART_STATUS, or RETURN_COMMAND_STATUS or CLEAR_ERROR.
    */
-  void send(uint8_t command_type, uint8_t option, std::vector<uint8_t> servo_ids)
+  void save(std::vector<uint8_t> servo_ids, uint8_t option)
   {
     serial_.flushOutput();
 
-    uint8_t data_length = 4 + servo_ids.size();
     std::vector<uint8_t> send_data;
-    send_data.push_back(data_length);
-    send_data.push_back(command_type);
+    send_data.push_back(4 + servo_ids.size());
+    send_data.push_back(COMMAND_TYPE_SAVE);
     send_data.push_back(option);
     send_data.insert(send_data.end(), servo_ids.begin(), servo_ids.end());
     send_data.push_back(checkSum(send_data));
@@ -107,40 +100,71 @@ public:
   }
 
   /**
-   * @brief send single command for reset
+   * @brief Load ROM parameters to RAM for single servo
    *
-   * @param command_type is the type of send command. Should be COMMAND_TYPE_RESET.
-   * @param option is the type of error response. Should be either RETURN_ERROR_STATUS, RETURN_MOTOR_STATUS,
-   * RETURN_UART_STATUS, or RETURN_COMMAND_STATUS
    * @param servo_id is the servo id to send command to.
-   * @param time is the time to reset
+   * @param option is the type of error response. Should be either RETURN_ERROR_STATUS, RETURN_MOTOR_STATUS,
+   * RETURN_UART_STATUS, or RETURN_COMMAND_STATUS or CLEAR_ERROR.
+   * @return uint8_t is the error code depending on what type of error response. 0 means no error.
    */
-  void send(uint8_t command_type, uint8_t option, uint8_t servo_id, uint8_t time)
+  uint8_t load(uint8_t servo_id, uint8_t option)
   {
-    serial_.flushOutput();
-
     std::vector<uint8_t> servo_ids = { servo_id };
-    send(command_type, option, servo_ids, time);
+    load(servo_ids, option);
+
+    serial_.flushInput();
+    serial_.waitReadable();
+    std::vector<uint8_t> recv_data;
+    serial_.read(recv_data, 5);
+    return recv_data[2];
   }
 
   /**
-   * @brief send multiple command for reset
+   * @brief Load ROM parameters to RAM for multiple servos
    *
-   * @param command_type is the type of send command. Should be COMMAND_TYPE_RESET.
-   * @param option is the type of error response. Should be either RETURN_ERROR_STATUS, RETURN_MOTOR_STATUS,
-   * RETURN_UART_STATUS, or RETURN_COMMAND_STATUS
    * @param servo_ids is the list of servo ids to send command to.
-   * @param time is the time to reset
+   * @param option is the type of error response. Should be either RETURN_ERROR_STATUS, RETURN_MOTOR_STATUS,
+   * RETURN_UART_STATUS, or RETURN_COMMAND_STATUS or CLEAR_ERROR.
    */
-  void send(uint8_t command_type, uint8_t option, std::vector<uint8_t> servo_ids, uint8_t time)
+  void load(std::vector<uint8_t> servo_ids, uint8_t option)
   {
     serial_.flushOutput();
 
-    uint8_t data_length = 5 + servo_ids.size();
     std::vector<uint8_t> send_data;
-    send_data.push_back(data_length);
-    send_data.push_back(command_type);
+    send_data.push_back(4 + servo_ids.size());
+    send_data.push_back(COMMAND_TYPE_LOAD);
     send_data.push_back(option);
+    send_data.insert(send_data.end(), servo_ids.begin(), servo_ids.end());
+    send_data.push_back(checkSum(send_data));
+    serial_.write(send_data);
+  }
+
+  /**
+   * @brief Reset servo
+   *
+   * @param servo_id is the servo id to send command to.
+   * @param time is when to reset.
+   */
+  void reset(uint8_t servo_id, uint8_t time)
+  {
+    std::vector<uint8_t> servo_ids = { servo_id };
+    reset(servo_ids, time);
+  }
+
+  /**
+   * @brief Reset multiple servo
+   *
+   * @param servo_ids is the list of servo ids to send command to.
+   * @param time is when to reset.
+   */
+  void reset(std::vector<uint8_t> servo_ids, uint8_t time)
+  {
+    serial_.flushOutput();
+
+    std::vector<uint8_t> send_data;
+    send_data.push_back(5 + servo_ids.size());
+    send_data.push_back(COMMAND_TYPE_RESET);
+    send_data.push_back(CLEAR_ERROR);
     send_data.insert(send_data.end(), servo_ids.begin(), servo_ids.end());
     send_data.push_back(time);
     send_data.push_back(checkSum(send_data));
@@ -148,25 +172,22 @@ public:
   }
 
   /**
-   * @brief Send single command with data
+   * @brief Write data to single servo
    *
    * @param T is the data type to send. Should be either uint8_t, short, unsigned short, long or unsigned long
-   * @param command_type is the send command. Should be COMMAND_TYPE_WRITE.
-   * @param option is the type of error response. Should be either RETURN_ERROR_STATUS, RETURN_MOTOR_STATUS,
-   * RETURN_UART_STATUS, or RETURN_COMMAND_STATUS
    * @param servo_id is the servo id to send command to.
+   * @param option is the type of error response. Should be either RETURN_ERROR_STATUS, RETURN_MOTOR_STATUS,
+   * RETURN_UART_STATUS, or RETURN_COMMAND_STATUS or CLEAR_ERROR.
    * @param data is the data to send.
    * @param address is the address to send data to.
    * @return uint8_t is the error code depending on what type of error response. 0 means no error.
    */
   template <typename T>
-  uint8_t send(uint8_t command_type, uint8_t option, uint8_t servo_id, T data, uint8_t address)
+  uint8_t write(uint8_t servo_id, uint8_t option, T data, uint8_t address)
   {
-    serial_.flushOutput();
-
     std::vector<T> multi_data = { data };
     std::vector<uint8_t> servo_ids = { servo_id };
-    send<T>(command_type, option, servo_ids, multi_data, address);
+    write<T>(servo_ids, option, multi_data, address);
 
     serial_.flushInput();
     serial_.waitReadable();
@@ -178,18 +199,17 @@ public:
   }
 
   /**
-   * @brief Send multiple command with data
+   * @brief Write data to multiple servos
    *
-   * @tparam T is the data type to send. Should be either uint8_t, short, unsigned short, long or unsigned long
-   * @param command_type is the send command. Should be COMMAND_TYPE_WRITE.
-   * @param option is the type of error response. Should be either RETURN_ERROR_STATUS, RETURN_MOTOR_STATUS,
-   * RETURN_UART_STATUS, or RETURN_COMMAND_STATUS
+   * @param T is the data type to send. Should be either uint8_t, short, unsigned short, long or unsigned long
    * @param servo_ids is the list of servo ids to send command to.
+   * @param option is the type of error response. Should be either
+   * RETURN_ERROR_STATUS, RETURN_MOTOR_STATUS, RETURN_UART_STATUS, or RETURN_COMMAND_STATUS or CLEAR_ERROR.
    * @param data is the list of data to send.
    * @param address is the address to send data to.
    */
   template <typename T>
-  void send(uint8_t command_type, uint8_t option, std::vector<uint8_t> servo_ids, std::vector<T> data, uint8_t address)
+  void write(std::vector<uint8_t> servo_ids, int8_t option, std::vector<T> data, uint8_t address)
   {
     serial_.flushOutput();
 
@@ -201,10 +221,9 @@ public:
       multi_data_bytes.insert(multi_data_bytes.end(), data_bytes.begin(), data_bytes.end());
     }
 
-    uint8_t data_length = 6 + multi_data_bytes.size();
     std::vector<uint8_t> send_data;
-    send_data.push_back(data_length);
-    send_data.push_back(command_type);
+    send_data.push_back(6 + multi_data_bytes.size());
+    send_data.push_back(COMMAND_TYPE_WRITE);
     send_data.push_back(option);
     send_data.insert(send_data.end(), multi_data_bytes.begin(), multi_data_bytes.end());
     send_data.push_back(address);
@@ -215,23 +234,20 @@ public:
   }
 
   /**
-   * @brief send single command for position
+   * @brief Set position for single servo
    *
-   * @param command_type is the type of send command. Should be COMMAND_TYPE_POSITION.
-   * @param option is the type of error response. Should be either RETURN_ERROR_STATUS, RETURN_MOTOR_STATUS,
-   * RETURN_UART_STATUS, or RETURN_COMMAND_STATUS
    * @param servo_id is the servo id to send command to.
+   * @param option is the type of error response. Should be either RETURN_ERROR_STATUS, RETURN_MOTOR_STATUS,
+   * RETURN_UART_STATUS, or RETURN_COMMAND_STATUS or CLEAR_ERROR.
    * @param position is the position to move to.
-   * @param time is the time to move to position.
+   * @param duration is the duration to move to the given position.
    * @return uint8_t is the error code depending on what type of error response. 0 means no error.
    */
-  uint8_t send(uint8_t command_type, uint8_t option, uint8_t servo_id, short position, unsigned short time)
+  uint8_t setPosition(uint8_t servo_id, uint8_t option, short position, unsigned short duration)
   {
-    serial_.flushOutput();
-
     std::vector<short> multi_positions = { position };
     std::vector<uint8_t> servo_ids = { servo_id };
-    send(command_type, option, servo_ids, multi_positions, time);
+    setPosition(servo_ids, option, multi_positions, duration);
 
     serial_.flushInput();
     serial_.waitReadable();
@@ -243,17 +259,16 @@ public:
   }
 
   /**
-   * @brief send multiple command for position
+   * @brief Set position for multiple servos
    *
-   * @param command_type is the type of send command. Should be COMMAND_TYPE_POSITION.
-   * @param option is the type of error response. Should be either RETURN_ERROR_STATUS, RETURN_MOTOR_STATUS,
-   * RETURN_UART_STATUS, or RETURN_COMMAND_STATUS
    * @param servo_ids is the list of servo ids to send command to.
+   * @param option is the type of error response. Should be either RETURN_ERROR_STATUS, RETURN_MOTOR_STATUS,
+   * RETURN_UART_STATUS, or RETURN_COMMAND_STATUS or CLEAR_ERROR.
    * @param positions is the list of positions to move to.
-   * @param time is the time to move to position.
+   * @param duration is the duration to move to the given position.
    */
-  void send(uint8_t command_type, uint8_t option, std::vector<uint8_t> servo_ids, std::vector<short> positions,
-            unsigned short time)
+  void setPosition(std::vector<uint8_t> servo_ids, uint8_t option, std::vector<short> positions,
+                   unsigned short duration)
   {
     serial_.flushOutput();
 
@@ -264,15 +279,14 @@ public:
       std::vector<uint8_t> data_bytes = toLittleEndianBytes(positions[index]);
       multi_data_bytes.insert(multi_data_bytes.end(), data_bytes.begin(), data_bytes.end());
     }
-    std::vector<uint8_t> time_bytes = toLittleEndianBytes(time);
+    std::vector<uint8_t> duration_bytes = toLittleEndianBytes(duration);
 
-    uint8_t data_length = 4 + multi_data_bytes.size() + time_bytes.size();
     std::vector<uint8_t> send_data;
-    send_data.push_back(data_length);
-    send_data.push_back(command_type);
+    send_data.push_back(4 + multi_data_bytes.size() + duration_bytes.size());
+    send_data.push_back(COMMAND_TYPE_POSITION);
     send_data.push_back(option);
     send_data.insert(send_data.end(), multi_data_bytes.begin(), multi_data_bytes.end());
-    send_data.insert(send_data.end(), time_bytes.begin(), time_bytes.end());
+    send_data.insert(send_data.end(), duration_bytes.begin(), duration_bytes.end());
     send_data.push_back(checkSum(send_data));
     serial_.write(send_data);
   }
@@ -281,24 +295,23 @@ public:
    * @brief read status
    *
    * @tparam T is the data type to send. Should be either uint8_t, short, unsigned short, long or unsigned long
-   * @param command_type is the type of read command. Should be COMMAND_TYPE_READ.
-   * @param option is the type of error response. Should be either RETURN_ERROR_STATUS, RETURN_MOTOR_STATUS,
-   * RETURN_UART_STATUS, or RETURN_COMMAND_STATUS
    * @param servo_id is the servo id to read from.
+   * @param option is the type of error response. Should be either RETURN_ERROR_STATUS, RETURN_MOTOR_STATUS,
+   * RETURN_UART_STATUS, or RETURN_COMMAND_STATUS or CLEAR_ERROR.
    * @param address is the address to read from.
    * @param length is the expected data length to read.
    * @param data is the data to read into. The read data will be stored in this variable.
    * @return uint8_t is the error code depending on what type of error response. 0 means no error.
    */
   template <typename T>
-  uint8_t read(uint8_t command_type, uint8_t option, uint8_t servo_id, uint8_t address, int length, T& data)
+  uint8_t read(uint8_t servo_id, uint8_t option, uint8_t address, int length, T& data)
   {
     serial_.flushOutput();
 
     uint8_t data_length = 7;
     std::vector<uint8_t> send_data;
     send_data.push_back(data_length);
-    send_data.push_back(command_type);
+    send_data.push_back(COMMAND_TYPE_READ);
     send_data.push_back(option);
     send_data.push_back(servo_id);
     send_data.push_back(address);

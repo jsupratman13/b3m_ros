@@ -39,7 +39,7 @@ int main(int argc, char** argv)
   }
   // reset b3m
   b3m.reset(1);
-  std::this_thread::sleep_for(std::chrono::milliseconds(100));
+  ros::Duration(1).sleep();
   //  set b3m free mode
   b3m.setServoMode(1, OPTIONS_RUN_FREE);
   //  set b3m position control mode
