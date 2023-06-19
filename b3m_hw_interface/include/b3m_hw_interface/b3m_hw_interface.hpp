@@ -46,7 +46,7 @@ private:
 
   std::size_t num_joints_;
   std::vector<std::string> joint_name_;
-  std::vector<int> servo_id_;
+  std::vector<uint8_t> servo_id_;
   std::vector<double> gear_ratio_;
   std::vector<double> direction_;
 

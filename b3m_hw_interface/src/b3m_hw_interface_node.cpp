@@ -25,7 +25,7 @@ int main(int argc, char** argv)
   ros::NodeHandle nh, nh_private("~");
 
   combined_robot_hw::CombinedRobotHW hw;
-  if (hw.init(nh, nh_private))
+  if (!hw.init(nh, nh_private))
   {
     ROS_FATAL_STREAM("Initializing hardware interfaces failed");
     ros::shutdown();
@@ -35,7 +35,7 @@ int main(int argc, char** argv)
 
   controller_manager::ControllerManager cm(&hw, nh);
   ros::AsyncSpinner spinner(1);
-  ros::Rate rate(100);  // 100Hz update rate
+  ros::Rate rate(20);  // 20Hz update rate
 
   spinner.start();
   while (ros::ok())

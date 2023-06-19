@@ -41,8 +41,6 @@ bool B3MHwInterface::init(ros::NodeHandle& /*root_nh*/, ros::NodeHandle& robot_h
     ros::shutdown();
     return false;
   }
-  interface_.reset(BROADCAST_ID);
-  ros::Duration(1.0).sleep();
 
   XmlRpc::XmlRpcValue joints_param;
   if (robot_hw_nh.getParam("joints", joints_param))
@@ -88,6 +86,9 @@ bool B3MHwInterface::init(ros::NodeHandle& /*root_nh*/, ros::NodeHandle& robot_h
     }
   }
 
+  interface_.reset(servo_id_);
+  ros::Duration(1.0).sleep();
+
   num_joints_ = joint_name_.size();
   position_.resize(num_joints_, 0.0);
   velocity_.resize(num_joints_, 0.0);
@@ -103,6 +104,7 @@ bool B3MHwInterface::init(ros::NodeHandle& /*root_nh*/, ros::NodeHandle& robot_h
     position_joint_interface_.registerHandle(pos_handle);
 
     interface_.setServoMode(servo_id_[i], OPTIONS_RUN_FREE);
+    interface_.setServoMode(servo_id_[i], OPTIONS_CONTROL_POSITION);
     interface_.setTrajectoryType(servo_id_[i], TRAJECTORY_NORMAL);
     interface_.setServoMode(servo_id_[i], OPTIONS_RUN_NORMAL);
   }
