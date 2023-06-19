@@ -1,8 +1,12 @@
 <?xml version="1.0"?>
 <launch>
-  <rosparam file="$(find b3m_hw_interface)/config/sample_config.yaml" command="load"/>
   <arg name="model" value="$(find b3m_hw_interface)/config/sample.xacro"/>
   <param name="robot_description" command="$(find xacro)/xacro $(arg model)"/>
-  <node name="b3m_hw_interface_node" pkg="b3m_hw_interface" type="b3m_hw_interface_node" output="screen"/>
+
+  <node name="b3m_hw_interface_node" pkg="b3m_hw_interface" type="b3m_hw_interface_node" output="screen">
+    <rosparam file="$(find b3m_hw_interface)/config/sample_hardware.yaml" command="load"/>
+  </node>
+
+  <rosparam file="$(find b3m_hw_interface)/config/sample_controller.yaml" command="load"/>
   <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false" output="screen" args="joint_state_controller joint1_position_controller joint2_position_controller"/>
 </launch>

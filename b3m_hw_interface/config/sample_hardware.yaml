@@ -2,9 +2,9 @@ robot_hardware:
   - sample_b3m_hardware
 
 sample_b3m_hardware:
-  type: b3m_hw_interface/B3mHwInterface
+  type: b3m_hw_interface/B3MHwInterface
   port: /dev/ttyUSB0
-  baudrate: 1000000
+  baudrate: 1500000
   joints:
     joint1:
       servo_id: 1
@@ -14,19 +14,3 @@ sample_b3m_hardware:
       servo_id: 2
       gear_ratio: 2.0
       reverse: true
-
-joint_state_controller:
-  type: joint_state_controller/JointStateController
-  publish_rate: 100
-
-joint1_position_controller:
-  type: position_controllers/JointPositionController
-  publish_rate: 100
-  base_frame_id: base_link
-  joint: joint1
-
-joint2_position_controller:
-  type: position_controllers/JointPositionController
-  publish_rate: 100
-  base_frame_id: base_link
-  joint: joint2
