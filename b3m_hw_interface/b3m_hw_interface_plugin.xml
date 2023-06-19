@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<library path="lib/libb3m_hw_interface">
+  <class name="b3m_hw_interface/B3MHwInterface" type="b3m_hw_interface::B3MHwInterface" base_class_type="hardware_interface::RobotHW">
+    <description>
+      B3M motor hardware interface plugin
+    </description>
+  </class>
+</library>
