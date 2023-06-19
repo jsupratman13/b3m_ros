@@ -7,7 +7,7 @@ find_package(catkin REQUIRED COMPONENTS roscpp serial)
 
 catkin_package(
   INCLUDE_DIRS include
-  LIBRARIES ${POJECT_NAME}
+  LIBRARIES ${PROJECT_NAME}
   CATKIN_DEPENDS roscpp serial
 )
 
