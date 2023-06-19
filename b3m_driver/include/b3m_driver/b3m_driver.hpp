@@ -18,13 +18,6 @@
 #define B3M_DRIVER_HPP_
 
 #include <serial/serial.h>
-#include <sys/types.h>
-#include <cstddef>
-#include <cstdint>
-#include <stdexcept>
-#include <string>
-#include <iostream>
-#include <iomanip>
 #include "b3m_driver/b3m_map.hpp"
 
 namespace b3m_driver

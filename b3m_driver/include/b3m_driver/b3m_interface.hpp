@@ -35,7 +35,7 @@ public:
   bool save(uint8_t servo_id, uint8_t error_option = RETURN_ERROR_STATUS);
   void save(std::vector<uint8_t> servo_ids, uint8_t error_option = RETURN_ERROR_STATUS);
   void reset(uint8_t servo_id, uint8_t time = 100);
-  void reset(std::vector<uint8_t> servo_ids, uint8_t time = 100);
+  void reset(std::vector<uint8_t> servo_ids, uint8_t time = 0);
 
   // system related functions
   bool setServoID(uint8_t servo_id, uint8_t new_servo_id, uint8_t error_option = RETURN_ERROR_STATUS);
