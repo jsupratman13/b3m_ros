@@ -18,6 +18,7 @@
 #define B3M_DRIVER_HPP_
 
 #include <serial/serial.h>
+#include <thread>
 #include "b3m_driver/b3m_map.hpp"
 
 namespace b3m_driver
@@ -37,8 +38,15 @@ public:
     serial_.setBaudrate(baudrate);
     serial_.setBytesize(serial::eightbits);
     serial_.setParity(serial::parity_none);
-    serial_.setStopbits(serial::stopbits_one);
-    serial::Timeout timeout = serial::Timeout::simpleTimeout(1000);
+    if (baudrate >= 2000000)
+    {
+      serial_.setStopbits(serial::stopbits_two);
+    }
+    else
+    {
+      serial_.setStopbits(serial::stopbits_one);
+    }
+    serial::Timeout timeout = serial::Timeout::simpleTimeout(100);
     serial_.setTimeout(timeout);
     serial_.open();
   }
@@ -299,8 +307,6 @@ public:
   template <typename T>
   uint8_t read(uint8_t servo_id, uint8_t option, uint8_t address, int length, T& data)
   {
-    serial_.flushOutput();
-
     uint8_t data_length = 7;
     std::vector<uint8_t> send_data;
     send_data.push_back(data_length);
@@ -312,9 +318,7 @@ public:
     send_data.push_back(checkSum(send_data));
     serial_.write(send_data);
 
-    serial_.flushInput();
-    // std::this_thread::sleep_for(std::chrono::milliseconds(100));
-    serial_.waitReadable();
+    std::this_thread::sleep_for(std::chrono::milliseconds(80));
 
     std::vector<uint8_t> recv_data;
     serial_.read(recv_data, 5 + length);
