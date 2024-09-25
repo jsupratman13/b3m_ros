@@ -113,8 +113,23 @@ bool B3MHwInterface::init(ros::NodeHandle& /*root_nh*/, ros::NodeHandle& robot_h
 
     interface_.setServoMode(servo_id_[i], OPTIONS_RUN_FREE);
     interface_.setServoMode(servo_id_[i], OPTIONS_CONTROL_POSITION);
-    interface_.setTrajectoryType(servo_id_[i], TRAJECTORY_NORMAL);
+    interface_.setTrajectoryType(servo_id_[i], TRAJECTORY_EVEN);
     interface_.setServoMode(servo_id_[i], OPTIONS_RUN_NORMAL);
+  }
+
+  bool start_at_zero = robot_hw_nh.param("start_at_zero", false);
+  if (start_at_zero)
+  {
+    std::vector<uint8_t> servo_ids;
+    std::vector<short> target_positions;
+    for (std::size_t i = 0; i < num_joints_; ++i)
+    {
+      servo_ids.push_back(servo_id_[i]);
+      double rad = offset_[i] * gear_ratio_[i] * direction_[i];
+      short deg100 = static_cast<short>(rad * (180.0 / M_PI) * 100.0);
+      target_positions.push_back(deg100);
+    }
+    interface_.setDesiredPosition(servo_ids, target_positions, 2000);
   }
 
   registerInterface(&joint_state_interface_);
