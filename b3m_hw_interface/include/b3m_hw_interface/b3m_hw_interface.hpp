@@ -49,6 +49,8 @@ private:
   std::vector<uint8_t> servo_id_;
   std::vector<double> gear_ratio_;
   std::vector<double> direction_;
+  std::vector<bool> open_loop_control_;
+  std::vector<double> offset_;
 
   std::vector<double> position_;
   std::vector<double> velocity_;
