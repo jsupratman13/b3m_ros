@@ -77,6 +77,58 @@ public:
       future.get();
     }
   }
+  bool prepareSwitch(const std::list<hardware_interface::ControllerInfo>& start_list,
+                     const std::list<hardware_interface::ControllerInfo>& stop_list) override
+  {
+    std::vector<std::future<bool>> futures;
+    futures.reserve(robot_hw_list_.size());
+    for (const auto& robot_hw : robot_hw_list_)
+    {
+      futures.push_back(std::async(std::launch::async, [this, &start_list, &stop_list, robot_hw]() {
+        std::list<hardware_interface::ControllerInfo> filtered_start_list;
+        std::list<hardware_interface::ControllerInfo> filtered_stop_list;
+
+        filterControllerList(start_list, filtered_start_list, robot_hw);
+        filterControllerList(stop_list, filtered_stop_list, robot_hw);
+
+        return robot_hw->prepareSwitch(filtered_start_list, filtered_stop_list);
+      }));
+    }
+
+    for (auto& future : futures)
+    {
+      if (!future.get())
+      {
+        ROS_ERROR_STREAM("Failed to prepare switch for one of the robot hardware.");
+        return false;
+      }
+    }
+
+    return true;
+  }
+  void doSwitch(const std::list<hardware_interface::ControllerInfo>& start_list,
+                const std::list<hardware_interface::ControllerInfo>& stop_list) override
+  {
+    std::vector<std::future<void>> futures;
+    futures.reserve(robot_hw_list_.size());
+    for (const auto& robot_hw : robot_hw_list_)
+    {
+      futures.push_back(std::async(std::launch::async, [this, &start_list, &stop_list, robot_hw]() {
+        std::list<hardware_interface::ControllerInfo> filtered_start_list;
+        std::list<hardware_interface::ControllerInfo> filtered_stop_list;
+
+        filterControllerList(start_list, filtered_start_list, robot_hw);
+        filterControllerList(stop_list, filtered_stop_list, robot_hw);
+
+        robot_hw->doSwitch(filtered_start_list, filtered_stop_list);
+      }));
+    }
+
+    for (auto& future : futures)
+    {
+      future.get();
+    }
+  }
 };
 
 int main(int argc, char** argv)
