@@ -19,7 +19,8 @@
 #include <controller_manager/controller_manager.h>
 #include <ros/ros.h>
 #include <vector>
-#include <future>
+#include <thread>
+#include <mutex>
 
 class ParallelCombinedRobotHW : public combined_robot_hw::CombinedRobotHW
 {
@@ -36,84 +37,110 @@ public:
                                           << ").");
       return false;
     }
-    std::vector<std::future<bool>> futures;
-    futures.reserve(robots.size());
-    for (const auto& robot : robots)
+    std::vector<std::thread> threads;
+    std::vector<bool> init_results(robots.size(), true);
+    std::mutex log_mutex;
+    for (size_t i = 0; i < robots.size(); ++i)
     {
-      futures.push_back(std::async(std::launch::async, &ParallelCombinedRobotHW::loadRobotHW, this, robot));
+      threads.emplace_back([this, &robots, &init_results, &log_mutex, i]() {
+        ROS_INFO_STREAM("Initializing RobotHW for: " << robots[i]);
+        bool success = loadRobotHW(robots[i]);
+        if (!success)
+        {
+          std::lock_guard<std::mutex> lock(log_mutex);
+          ROS_ERROR_STREAM("Failed to load RobotHW for: " << robots[i]);
+          init_results[i] = false;
+        }
+        else
+        {
+          std::lock_guard<std::mutex> lock(log_mutex);
+          ROS_INFO_STREAM("Successfully loaded RobotHW for: " << robots[i]);
+        }
+      });
     }
-    for (auto& future : futures)
+    for (auto& thread : threads)
     {
-      if (!future.get())
-      {
+      if (thread.joinable())
+        thread.join();
+    }
+    // Check if all hardware interfaces were successfully initialized
+    for (const auto& result : init_results)
+    {
+      if (!result)
         return false;
-      }
     }
     return true;
   }
   void read(const ros::Time& time, const ros::Duration& period) override
   {
-    std::vector<std::future<void>> futures;
-    futures.reserve(robot_hw_list_.size());
+    std::vector<std::thread> threads;
+    threads.reserve(robot_hw_list_.size());
     for (auto& robot_hw : robot_hw_list_)
     {
-      futures.push_back(std::async(std::launch::async, &hardware_interface::RobotHW::read, robot_hw, time, period));
+      threads.emplace_back([&]() { robot_hw->read(time, period); });
     }
-    for (auto& future : futures)
+    for (auto& thread : threads)
     {
-      future.get();
+      thread.join();
     }
   }
   void write(const ros::Time& time, const ros::Duration& period) override
   {
-    std::vector<std::future<void>> futures;
-    futures.reserve(robot_hw_list_.size());
+    std::vector<std::thread> threads;
+    threads.reserve(robot_hw_list_.size());
     for (auto& robot_hw : robot_hw_list_)
     {
-      futures.push_back(std::async(std::launch::async, &hardware_interface::RobotHW::write, robot_hw, time, period));
+      threads.emplace_back([&]() { robot_hw->write(time, period); });
     }
-    for (auto& future : futures)
+    for (auto& thread : threads)
     {
-      future.get();
+      thread.join();
     }
   }
   bool prepareSwitch(const std::list<hardware_interface::ControllerInfo>& start_list,
                      const std::list<hardware_interface::ControllerInfo>& stop_list) override
   {
-    std::vector<std::future<bool>> futures;
-    futures.reserve(robot_hw_list_.size());
-    for (const auto& robot_hw : robot_hw_list_)
+    bool success = true;
+    std::vector<std::thread> threads;
+    std::vector<bool> results(robot_hw_list_.size(), true);
+    for (size_t i = 0; i < robot_hw_list_.size(); ++i)
     {
-      futures.push_back(std::async(std::launch::async, [this, &start_list, &stop_list, robot_hw]() {
+      threads.emplace_back([&, i]() {
         std::list<hardware_interface::ControllerInfo> filtered_start_list;
         std::list<hardware_interface::ControllerInfo> filtered_stop_list;
 
-        filterControllerList(start_list, filtered_start_list, robot_hw);
-        filterControllerList(stop_list, filtered_stop_list, robot_hw);
+        filterControllerList(start_list, filtered_start_list, robot_hw_list_[i]);
+        filterControllerList(stop_list, filtered_stop_list, robot_hw_list_[i]);
 
-        return robot_hw->prepareSwitch(filtered_start_list, filtered_stop_list);
-      }));
+        if (!robot_hw_list_[i]->prepareSwitch(filtered_start_list, filtered_stop_list))
+        {
+          results[i] = false;
+        }
+      });
     }
-
-    for (auto& future : futures)
+    for (auto& thread : threads)
     {
-      if (!future.get())
+      thread.join();
+    }
+    for (const auto& res : results)
+    {
+      if (!res)
       {
-        ROS_ERROR_STREAM("Failed to prepare switch for one of the robot hardware.");
-        return false;
+        success = false;
+        break;
       }
     }
 
-    return true;
+    return success;
   }
   void doSwitch(const std::list<hardware_interface::ControllerInfo>& start_list,
                 const std::list<hardware_interface::ControllerInfo>& stop_list) override
   {
-    std::vector<std::future<void>> futures;
-    futures.reserve(robot_hw_list_.size());
-    for (const auto& robot_hw : robot_hw_list_)
+    std::vector<std::thread> threads;
+    threads.reserve(robot_hw_list_.size());
+    for (auto& robot_hw : robot_hw_list_)
     {
-      futures.push_back(std::async(std::launch::async, [this, &start_list, &stop_list, robot_hw]() {
+      threads.emplace_back([&]() {
         std::list<hardware_interface::ControllerInfo> filtered_start_list;
         std::list<hardware_interface::ControllerInfo> filtered_stop_list;
 
@@ -121,12 +148,11 @@ public:
         filterControllerList(stop_list, filtered_stop_list, robot_hw);
 
         robot_hw->doSwitch(filtered_start_list, filtered_stop_list);
-      }));
+      });
     }
-
-    for (auto& future : futures)
+    for (auto& thread : threads)
     {
-      future.get();
+      thread.join();
     }
   }
 };
@@ -146,8 +172,10 @@ int main(int argc, char** argv)
   ROS_INFO_STREAM("Initializing hardware interfaces succeeded, starting hardware interface");
 
   controller_manager::ControllerManager cm(&hw, nh);
+  ros::AsyncSpinner spinner(4);
   ros::Rate rate(100);  // 100Hz update rate
 
+  spinner.start();
   while (ros::ok())
   {
     hw.read(ros::Time::now(), rate.expectedCycleTime());
@@ -155,5 +183,6 @@ int main(int argc, char** argv)
     hw.write(ros::Time::now(), rate.expectedCycleTime());
     rate.sleep();
   }
+  spinner.stop();
   return 0;
 }
