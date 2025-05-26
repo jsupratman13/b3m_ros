@@ -187,6 +187,17 @@ void B3MAsyncInterface::responseCallback(const uint8_t* data, size_t length)
       std::cout << std::endl;
     }
     std::vector<uint8_t> buffer(data + i, data + i + command_size);
+    if (!validateReadSum(buffer))
+    {
+      std::cerr << "Checksum validation failed for received packet." << std::endl;
+      std::cerr << "Received packet: ";
+      for (const auto& byte : buffer)
+      {
+        std::cerr << std::hex << static_cast<int>(byte) << " ";
+      }
+      std::cerr << std::dec << std::endl;
+      return;
+    }
     i += command_size;
     if (i > length)
     {

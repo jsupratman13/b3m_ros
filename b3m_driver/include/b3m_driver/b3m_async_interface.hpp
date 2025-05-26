@@ -97,6 +97,17 @@ private:
     }
     return static_cast<uint8_t>(sum & 0xFF);
   }
+
+  bool validateReadSum(const std::vector<uint8_t>& data)
+  {
+    if (data.size() < 2)
+    {
+      return false;  // Not enough data for checksum
+    }
+    uint8_t received_sum = data.back();
+    uint8_t calculated_sum = checkSum(std::vector<uint8_t>(data.begin(), data.end() - 1));
+    return received_sum == calculated_sum;
+  }
 };
 }  // namespace b3m_driver
 #endif  // B3M_ASYNC_DRIVER_HPP_
