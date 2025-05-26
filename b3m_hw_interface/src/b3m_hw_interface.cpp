@@ -110,12 +110,15 @@ bool B3MHwInterface::init(ros::NodeHandle& /*root_nh*/, ros::NodeHandle& robot_h
     joint_state_interface_.registerHandle(state_handle);
     hardware_interface::JointHandle pos_handle(state_handle, &command_[i]);
     position_joint_interface_.registerHandle(pos_handle);
-
-    interface_.setServoMode(servo_id_[i], OPTIONS_RUN_FREE);
-    interface_.setServoMode(servo_id_[i], OPTIONS_CONTROL_POSITION);
-    interface_.setTrajectoryType(servo_id_[i], TRAJECTORY_EVEN);
-    interface_.setServoMode(servo_id_[i], OPTIONS_RUN_NORMAL);
   }
+  std::vector<uint8_t> options_run_free(num_joints_, OPTIONS_RUN_FREE);
+  interface_.setServoMode(servo_id_, options_run_free);
+  std::vector<uint8_t> options_control_position(num_joints_, OPTIONS_CONTROL_POSITION);
+  interface_.setServoMode(servo_id_, options_control_position);
+  std::vector<uint8_t> trajectory_even(num_joints_, TRAJECTORY_EVEN);
+  interface_.setTrajectoryType(servo_id_, trajectory_even);
+  std::vector<uint8_t> options_run_normal(num_joints_, OPTIONS_RUN_NORMAL);
+  interface_.setServoMode(servo_id_, options_run_normal);
 
   bool start_at_zero = robot_hw_nh.param("start_at_zero", false);
   if (start_at_zero)

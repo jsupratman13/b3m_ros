@@ -25,11 +25,11 @@
 #include <pluginlib/class_list_macros.hpp>
 #include <vector>
 
-#include "b3m_driver/b3m_interface.hpp"
+#include "b3m_driver/b3m_async_interface.hpp"
 
 namespace b3m_hw_interface
 {
-using b3m_driver::B3MInterface;
+using b3m_driver::B3MAsyncInterface;
 
 class B3MHwInterface : public hardware_interface::RobotHW
 {
@@ -39,7 +39,7 @@ public:
   void write(const ros::Time& /*time*/, const ros::Duration& /*period*/) override;
 
 private:
-  B3MInterface interface_;
+  B3MAsyncInterface interface_;
 
   hardware_interface::JointStateInterface joint_state_interface_;
   hardware_interface::PositionJointInterface position_joint_interface_;
