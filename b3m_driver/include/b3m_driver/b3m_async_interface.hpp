@@ -33,6 +33,10 @@ public:
   ~B3MAsyncInterface();
   bool connect(const std::string& port, uint32_t baudrate);
   void disconnect();
+  void setDebugMode(bool debug)
+  {
+    debug_mode_ = debug;
+  }
   void reset(std::vector<uint8_t> servo_ids, uint8_t time = 0);
   void setServoMode(std::vector<uint8_t> servo_id, std::vector<uint8_t> mode,
                     uint8_t error_option = RETURN_ERROR_STATUS);
@@ -51,6 +55,7 @@ public:
   short getCurrentVelocity(uint8_t servo_id);
 
 private:
+  bool debug_mode_ = false;
   std::unique_ptr<async_comm::Serial> serial_;
   std::map<uint8_t, std::queue<uint8_t> > servo_requests_;
   std::map<uint8_t, short> servo_positions_;

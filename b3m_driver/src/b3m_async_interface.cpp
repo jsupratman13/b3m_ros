@@ -170,41 +170,43 @@ void B3MAsyncInterface::readRequest(uint8_t servo_id, uint8_t option, uint8_t ad
 
 void B3MAsyncInterface::responseCallback(const uint8_t* data, size_t length)
 {
-  // TODO: checksum
-  // TODO: handle non read command?
-  bool packet_check = true;
+  if (debug_mode_)
+  {
+    std::cout << "Received multiple packets: ";
+    for (size_t j = 0; j < length; ++j)
+    {
+      std::cout << std::hex << static_cast<int>(data[j]) << " ";
+    }
+    std::cout << std::endl;
+  }
   for (size_t i = 0; i < length;)
   {
-    auto command_size = data[i];
-    if (packet_check && (command_size < length))
+    auto command_size = static_cast<size_t>(data[i]);
+    auto packet_end_index = command_size + i;
+    if (packet_end_index > length)
     {
-      packet_check = false;
-      std::cout << "Received multiple packets: ";
-      for (size_t j = 0; j < length; ++j)
-      {
-        std::cout << std::hex << static_cast<int>(data[j]) << " ";
-      }
-      std::cout << std::endl;
-    }
-    std::vector<uint8_t> buffer(data + i, data + i + command_size);
-    if (!validateReadSum(buffer))
-    {
-      std::cerr << "Checksum validation failed for received packet." << std::endl;
-      std::cerr << "Received packet: ";
-      for (const auto& byte : buffer)
-      {
-        std::cerr << std::hex << static_cast<int>(byte) << " ";
-      }
-      std::cerr << std::dec << std::endl;
+      if (debug_mode_)
+        std::cerr << "Expected packet index " << packet_end_index << " exceeds given packet size: " << length
+                  << std::endl;
       return;
     }
-    i += command_size;
-    if (i > length)
+    std::vector<uint8_t> buffer(data + i, data + packet_end_index);
+    i = packet_end_index;
+    if (!validateReadSum(buffer))
     {
-      std::cerr << "Received packet size exceeds data length." << std::endl;
+      if (debug_mode_)
+      {
+        std::cerr << "Checksum validation failed for packet: ";
+        for (const auto& byte : buffer)
+        {
+          std::cerr << std::hex << static_cast<int>(byte) << " ";
+        }
+        std::cerr << std::endl;
+      }
       return;
     }
     auto command_type = buffer[1];
+    // TODO: handle non read command?
     if (command_type != 0x83)
     {
       continue;
