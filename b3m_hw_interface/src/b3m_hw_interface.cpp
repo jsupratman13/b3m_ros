@@ -143,6 +143,15 @@ bool B3MHwInterface::init(ros::NodeHandle& /*root_nh*/, ros::NodeHandle& robot_h
 
 void B3MHwInterface::read(const ros::Time& /*time*/, const ros::Duration& /*period*/)
 {
+  std::vector<uint8_t> request_ids;
+  for (std::size_t i = 0; i < num_joints_; ++i)
+  {
+    if (!open_loop_control_[i])
+    {
+      request_ids.push_back(servo_id_[i]);
+    }
+  }
+  interface_.requestCurrentPosition(request_ids);
   for (std::size_t i = 0; i < num_joints_; ++i)
   {
     if (open_loop_control_[i])
