@@ -37,6 +37,7 @@ bool B3MAsyncInterface::connect(const std::string& port, uint32_t baudrate)
     std::cout << "Failed to open serial port: " << port << std::endl;
     return false;
   }
+  serial_->register_receive_callback([this](const uint8_t* data, size_t length) { responseCallback(data, length); });
   return true;
 }
 
@@ -169,41 +170,61 @@ void B3MAsyncInterface::readRequest(uint8_t servo_id, uint8_t option, uint8_t ad
 
 void B3MAsyncInterface::responseCallback(const uint8_t* data, size_t length)
 {
-  std::vector<uint8_t> buffer(data, data + length);
-  if (buffer.size() < 5)
+  // TODO: checksum
+  // TODO: handle non read command?
+  bool packet_check = true;
+  for (size_t i = 0; i < length;)
   {
-    return;
-  }
-  auto command_type = buffer[1];
-  if (command_type != 0x83)
-  {
-    return;
-  }
-  auto servo_id = buffer[3];
-  if ((servo_requests_.find(servo_id) == servo_requests_.end()) || servo_requests_[servo_id].empty())
-  {
-    return;
-  }
-  auto address = servo_requests_[servo_id].front();
-  servo_requests_[servo_id].pop();
-  switch (address)
-  {
-    case SERVO_CURRENT_POSITION: {
-      std::vector<uint8_t> data_bytes(buffer.begin() + 4, buffer.end() - 1);
-      short position = fromLittleEndianBytes<short>(data_bytes);
-      servo_positions_[servo_id] = position;
-      break;
+    auto command_size = data[i];
+    if (packet_check && (command_size < length))
+    {
+      packet_check = false;
+      std::cout << "Received multiple packets: ";
+      for (size_t j = 0; j < length; ++j)
+      {
+        std::cout << std::hex << static_cast<int>(data[j]) << " ";
+      }
+      std::cout << std::endl;
     }
-    case SERVO_CURRENT_VELOCITY: {
-      std::vector<uint8_t> data_bytes(buffer.begin() + 4, buffer.end() - 1);
-      short velocity = fromLittleEndianBytes<short>(data_bytes);
-      servo_velocities_[servo_id] = velocity;
-      break;
+    std::vector<uint8_t> buffer(data + i, data + i + command_size);
+    i += command_size;
+    if (i > length)
+    {
+      std::cerr << "Received packet size exceeds data length." << std::endl;
+      return;
     }
-    default:
-      std::cerr << "Unknown address: " << static_cast<int>(address) << " for servo ID: " << static_cast<int>(servo_id)
-                << std::endl;
-      break;
+    auto command_type = buffer[1];
+    if (command_type != 0x83)
+    {
+      continue;
+    }
+    auto servo_id = buffer[3];
+    if ((servo_requests_.find(servo_id) == servo_requests_.end()) || servo_requests_[servo_id].empty())
+    {
+      std::cerr << "No request found for servo ID: " << static_cast<int>(servo_id) << std::endl;
+      continue;
+    }
+    auto address = servo_requests_[servo_id].front();
+    servo_requests_[servo_id].pop();
+    switch (address)
+    {
+      case SERVO_CURRENT_POSITION: {
+        std::vector<uint8_t> data_bytes(buffer.begin() + 4, buffer.end() - 1);
+        short position = fromLittleEndianBytes<short>(data_bytes);
+        servo_positions_[servo_id] = position;
+        break;
+      }
+      case SERVO_CURRENT_VELOCITY: {
+        std::vector<uint8_t> data_bytes(buffer.begin() + 4, buffer.end() - 1);
+        short velocity = fromLittleEndianBytes<short>(data_bytes);
+        servo_velocities_[servo_id] = velocity;
+        break;
+      }
+      default:
+        std::cerr << "Unknown address: " << static_cast<int>(address) << " for servo ID: " << static_cast<int>(servo_id)
+                  << std::endl;
+        break;
+    }
   }
 }
 }  // namespace b3m_driver
