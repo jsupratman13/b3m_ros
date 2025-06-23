@@ -129,8 +129,8 @@
 #define RETURN_ERROR_STATUS 0x00
 #define SYSTEM_ERROR 0x01
 #define MOTOR_ERROR 0x02
-#define UART_ERROR 0x03
-#define COMMAND_ERROR 0x04
+#define UART_ERROR 0x04
+#define COMMAND_ERROR 0x08
 
 // system errors
 #define RETURN_SYSTEM_STATUS 0x01

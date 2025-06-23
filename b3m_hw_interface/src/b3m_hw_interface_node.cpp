@@ -22,9 +22,83 @@
 #include <thread>
 #include <mutex>
 
-class ParallelCombinedRobotHW : public combined_robot_hw::CombinedRobotHW
+#include <queue>
+#include <functional>
+#include <condition_variable>
+
+class ThreadPool
 {
 public:
+  explicit ThreadPool(size_t n) : stop_(false)
+  {
+    for (size_t i = 0; i < n; ++i)
+    {
+      workers_.emplace_back([this]() {
+        while (true)
+        {
+          std::function<void()> task;
+          {
+            std::unique_lock<std::mutex> lock(queue_mutex_);
+            condition_.wait(lock, [this] { return stop_ || !tasks_.empty(); });
+            if (stop_ && tasks_.empty())
+              return;
+            task = std::move(tasks_.front());
+            tasks_.pop();
+          }
+          task();
+        }
+      });
+    }
+  }
+
+  ~ThreadPool()
+  {
+    {
+      std::unique_lock<std::mutex> lock(queue_mutex_);
+      stop_ = true;
+    }
+    condition_.notify_all();
+    for (std::thread& worker : workers_)
+      worker.join();
+  }
+
+  void enqueue(std::function<void()> func)
+  {
+    {
+      std::unique_lock<std::mutex> lock(queue_mutex_);
+      tasks_.push(std::move(func));
+    }
+    condition_.notify_one();
+  }
+
+  void waitAll()
+  {
+    std::unique_lock<std::mutex> lock(queue_mutex_);
+    condition_.wait(lock, [this] { return tasks_.empty(); });
+  }
+
+  // For each round, we can track #outstanding jobs to allow waitAll().
+  // Instead, let's do it per read/write with local barriers.
+
+private:
+  std::vector<std::thread> workers_;
+  std::queue<std::function<void()>> tasks_;
+  std::mutex queue_mutex_;
+  std::condition_variable condition_;
+  bool stop_;
+};
+
+class ParallelCombinedRobotHW : public combined_robot_hw::CombinedRobotHW
+{
+private:
+  ThreadPool pool_;
+
+public:
+  ParallelCombinedRobotHW() : pool_(std::thread::hardware_concurrency())
+  {
+    // Initialize the thread pool with the number of hardware threads available
+    ROS_INFO_STREAM("Thread pool initialized with " << std::thread::hardware_concurrency() << " threads.");
+  }
   bool init(ros::NodeHandle& nh, ros::NodeHandle& nh_private) override
   {
     root_nh_ = nh;
@@ -73,29 +147,45 @@ public:
   }
   void read(const ros::Time& time, const ros::Duration& period) override
   {
-    std::vector<std::thread> threads;
-    threads.reserve(robot_hw_list_.size());
-    for (auto& robot_hw : robot_hw_list_)
+    std::atomic<size_t> jobs_left(robot_hw_list_.size());
+    std::condition_variable cv;
+    std::mutex mtx;
+
+    for (size_t i = 0; i < robot_hw_list_.size(); ++i)
     {
-      threads.emplace_back([&]() { robot_hw->read(time, period); });
+      pool_.enqueue([&, i]() {
+        robot_hw_list_[i]->read(time, period);
+        if (--jobs_left == 0)
+        {
+          std::lock_guard<std::mutex> lock(mtx);
+          cv.notify_one();
+        }
+      });
     }
-    for (auto& thread : threads)
-    {
-      thread.join();
-    }
+
+    std::unique_lock<std::mutex> lock(mtx);
+    cv.wait(lock, [&] { return jobs_left == 0; });
   }
   void write(const ros::Time& time, const ros::Duration& period) override
   {
-    std::vector<std::thread> threads;
-    threads.reserve(robot_hw_list_.size());
-    for (auto& robot_hw : robot_hw_list_)
+    std::atomic<size_t> jobs_left(robot_hw_list_.size());
+    std::condition_variable cv;
+    std::mutex mtx;
+
+    for (size_t i = 0; i < robot_hw_list_.size(); ++i)
     {
-      threads.emplace_back([&]() { robot_hw->write(time, period); });
+      pool_.enqueue([&, i]() {
+        robot_hw_list_[i]->write(time, period);
+        if (--jobs_left == 0)
+        {
+          std::lock_guard<std::mutex> lock(mtx);
+          cv.notify_one();
+        }
+      });
     }
-    for (auto& thread : threads)
-    {
-      thread.join();
-    }
+
+    std::unique_lock<std::mutex> lock(mtx);
+    cv.wait(lock, [&] { return jobs_left == 0; });
   }
   bool prepareSwitch(const std::list<hardware_interface::ControllerInfo>& start_list,
                      const std::list<hardware_interface::ControllerInfo>& stop_list) override
