@@ -113,6 +113,7 @@ bool B3MHwInterface::init(ros::NodeHandle& /*root_nh*/, ros::NodeHandle& robot_h
 
     interface_.setServoMode(servo_id_[i], OPTIONS_RUN_FREE);
     interface_.setServoMode(servo_id_[i], OPTIONS_CONTROL_POSITION);
+    interface_.setPIDGainPresetNo(servo_id_[i], 1);  // set GAIN HIGH
     interface_.setTrajectoryType(servo_id_[i], TRAJECTORY_EVEN);
     interface_.setServoMode(servo_id_[i], OPTIONS_RUN_NORMAL);
   }
