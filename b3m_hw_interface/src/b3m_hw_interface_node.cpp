@@ -263,7 +263,7 @@ int main(int argc, char** argv)
 
   controller_manager::ControllerManager cm(&hw, nh);
   ros::AsyncSpinner spinner(4);
-  ros::Rate rate(100);  // 100Hz update rate
+  ros::Rate rate(50);  // 50Hz update rate
 
   spinner.start();
   while (ros::ok())
