@@ -23,7 +23,9 @@
 
 namespace b3m_hw_interface
 {
-
+B3MHwInterface::B3MHwInterface() : interface_()
+{
+}
 bool B3MHwInterface::init(ros::NodeHandle& /*root_nh*/, ros::NodeHandle& robot_hw_nh)
 {
   std::string port;
