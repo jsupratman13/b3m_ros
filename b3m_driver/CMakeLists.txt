@@ -13,7 +13,7 @@ catkin_package(
 
 include_directories(include ${catkin_INCLUDE_DIRS})
 
-add_library(${PROJECT_NAME} src/b3m_interface.cpp)
+add_library(${PROJECT_NAME} src/b3m_interface.cpp src/b3m_async_interface.cpp)
 
 add_executable(sample_${PROJECT_NAME}_node src/sample_b3m_driver_node.cpp)
 add_dependencies(sample_${PROJECT_NAME}_node ${catkin_EXPORTED_TARGETS})
